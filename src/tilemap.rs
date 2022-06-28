@@ -7,10 +7,7 @@ use bevy_rapier2d::prelude::*;
 use crate::player::PlayerBundle;
 
 #[derive(Debug, Default)]
-pub struct LevelSize {
-    pub width: f32,
-    pub height: f32,
-}
+pub struct LevelSize(pub Option<Vec2>);
 
 pub struct TilemapPlugin;
 
@@ -54,8 +51,10 @@ fn set_boundary(
         if let LevelEvent::Transformed(_) = event {
             level_query.for_each(|level_handle| {
                 if let Some(level) = levels.get(level_handle) {
-                    level_size.width = level.level.px_wid as f32;
-                    level_size.height = level.level.px_hei as f32;
+                    *level_size = LevelSize(Some(Vec2::new(
+                        level.level.px_wid as f32,
+                        level.level.px_hei as f32,
+                    )));
                 }
             })
         }

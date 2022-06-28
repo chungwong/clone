@@ -276,11 +276,14 @@ pub(crate) fn boundary(
     level_size: Res<LevelSize>,
     mut players: Query<&mut Transform, With<Player>>,
 ) {
-    for mut transform in players.iter_mut() {
-        if transform.translation.x > level_size.width {
-            transform.translation.x = level_size.width;
-        } else if transform.translation.x < 0.0 {
-            transform.translation.x = 0.0;
+    // during startup, there is a few frames that level_size is not initialised
+    if let Some(level_size) = level_size.0 {
+        for mut transform in players.iter_mut() {
+            if transform.translation.x > level_size.x {
+                transform.translation.x = level_size.x;
+            } else if transform.translation.x < 0.0 {
+                transform.translation.x = 0.0;
+            }
         }
     }
 }
