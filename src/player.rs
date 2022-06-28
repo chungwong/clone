@@ -94,7 +94,7 @@ enum JumpStatus {
     InitiateWallJump,
     GoingUp,
     StoppingUp,
-    GoingDown,
+    Falling,
     WallSliding,
 }
 

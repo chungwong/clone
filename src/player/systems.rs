@@ -195,7 +195,7 @@ pub(crate) fn jump(
                     JumpStatus::StoppingUp
                 }
             } else {
-                JumpStatus::GoingDown
+                JumpStatus::Falling
             }
         })();
 
@@ -221,7 +221,7 @@ pub(crate) fn jump(
                     * time.delta_seconds();
                 player.rising = false;
             }
-            JumpStatus::GoingDown => {
+            JumpStatus::Falling => {
                 velocity.linvel.y += rapier_config.gravity.y
                     * player_movement_settings.fall_factor
                     * time.delta_seconds();
