@@ -91,7 +91,6 @@ pub struct PlayerMovementSettings {
 enum JumpStatus {
     CanJump,
     InitiateJump,
-    InitiateWallJump,
     GoingUp,
     StoppingUp,
     Falling,
@@ -104,7 +103,6 @@ pub struct Player {
     rising: bool,
     is_jumping: bool,
     wall_sliding: bool,
-    is_wall_jumping: bool,
     last_stood_normal: Vec2,
     last_stood_time: Option<Instant>,
     jump_status: JumpStatus,
@@ -117,7 +115,6 @@ impl Default for Player {
             rising: false,
             is_jumping: false,
             wall_sliding: false,
-            is_wall_jumping: false,
             last_stood_normal: Vec2::Y,
             last_stood_time: None,
             jump_status: JumpStatus::CanJump,

@@ -155,12 +155,11 @@ pub(crate) fn jump(
         player.wall_sliding = false;
 
         if let Some(normal) = standing_normal {
-            // reset player.is_wall_jumping and player.is_jumping when it is jump back on ground
+            // reset player.is_jumping when it is jump back on ground
             // 1. on a ground
             // 2. on wall grab
             if normal.x.abs() == 1.0 || normal.y == 1.0 {
                 player.is_jumping = false;
-                player.is_wall_jumping = false;
             }
         }
 
@@ -175,7 +174,7 @@ pub(crate) fn jump(
                     && (input.pressed(KeyCode::D) || input.pressed(KeyCode::A))
                 {
                     if input.just_pressed(KeyCode::Space) {
-                        return JumpStatus::InitiateWallJump;
+                        return JumpStatus::InitiateJump;
                     }
                     return JumpStatus::WallSliding;
                 }
@@ -237,12 +236,6 @@ pub(crate) fn jump(
                 // wall grab
                 velocity.linvel.y = 0.0;
             }
-            JumpStatus::InitiateWallJump => {
-                player.is_wall_jumping = true;
-
-                velocity.linvel.x = Vec2::X.x * player_movement_settings.run_speed;
-                velocity.linvel.y = Vec2::Y.y * player_movement_settings.jump_power_coefficient;
-            }
         }
 
         player.jump_status = jump_status;
@@ -251,7 +244,7 @@ pub(crate) fn jump(
 pub(crate) fn run(
     time: Res<Time>,
     input: Res<Input<KeyCode>>,
-    mut query: Query<(&mut Velocity, &Player)>,
+    mut query: Query<&mut Velocity, With<Player>>,
     player_movement_settings: Res<PlayerMovementSettings>,
 ) {
     let target_speed: f32 = if input.pressed(KeyCode::A) || input.pressed(KeyCode::Left) {
@@ -262,15 +255,12 @@ pub(crate) fn run(
         0.0
     };
 
-    for (mut velocity, player) in query.iter_mut() {
-        // if wall jumping, not able to move in air
-        if !player.is_wall_jumping {
-            velocity.linvel = get_run_velocity(
-                &velocity.linvel,
-                target_speed * player_movement_settings.run_speed,
-                time.delta_seconds(),
-            );
-        }
+    for mut velocity in query.iter_mut() {
+        velocity.linvel = get_run_velocity(
+            &velocity.linvel,
+            target_speed * player_movement_settings.run_speed,
+            time.delta_seconds(),
+        );
     }
 }
 
