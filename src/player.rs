@@ -87,7 +87,7 @@ pub struct PlayerMovementSettings {
     pub gravity_scale: f32,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 enum JumpStatus {
     CanJump,
     InitiateJump,
@@ -107,6 +107,7 @@ pub struct Player {
     is_wall_jumping: bool,
     last_stood_normal: Vec2,
     last_stood_time: Option<Instant>,
+    jump_status: JumpStatus,
 }
 
 impl Default for Player {
@@ -119,6 +120,7 @@ impl Default for Player {
             is_wall_jumping: false,
             last_stood_normal: Vec2::Y,
             last_stood_time: None,
+            jump_status: JumpStatus::CanJump,
         }
     }
 }

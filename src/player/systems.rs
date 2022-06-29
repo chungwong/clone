@@ -244,6 +244,8 @@ pub(crate) fn jump(
                 velocity.linvel.y = Vec2::Y.y * player_movement_settings.jump_power_coefficient;
             }
         }
+
+        player.jump_status = jump_status;
     }
 }
 pub(crate) fn run(
