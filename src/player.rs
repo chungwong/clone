@@ -133,6 +133,7 @@ pub struct PlayerPhysicsBundle {
     pub mass_properties: MassProperties,
     pub rigid_body: RigidBody,
     pub velocity: Velocity,
+    pub ccd: Ccd,
 }
 
 impl From<EntityInstance> for PlayerPhysicsBundle {
@@ -153,6 +154,7 @@ impl From<EntityInstance> for PlayerPhysicsBundle {
             },
             rigid_body: RigidBody::Dynamic,
             velocity: Velocity::zero(),
+            ccd: Ccd::enabled(),
         }
     }
 }
@@ -198,6 +200,9 @@ pub struct PlayerBundle {
 
     pub player: Player,
 
+    #[from_entity_instance]
+    entity_instance: EntityInstance,
+
     #[worldly]
     pub worldly: Worldly,
 }
@@ -221,9 +226,12 @@ impl Plugin for PlayerPlugin {
                 gravity_scale: DEFAULT_GRAVITY_SCALE,
             })
             .add_system(systems::check_standing)
-            .add_system(systems::dash.after(systems::check_standing))
-            .add_system(systems::run.after(systems::check_standing))
-            .add_system(systems::jump.after(systems::check_standing))
-            .add_system(systems::boundary);
+            .add_system_set(
+                SystemSet::new()
+                .with_system(systems::dash.after(systems::check_standing))
+                .with_system(systems::run.after(systems::check_standing))
+                .with_system(systems::jump.after(systems::check_standing))
+            )
+            .add_system_to_stage(CoreStage::PostUpdate, systems::boundary);
     }
 }

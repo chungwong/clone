@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
+use bevy_ecs_ldtk::prelude::EntityInstance;
 
 use crate::player::{DashInput, Direction, JumpStatus, Player, PlayerMovementSettings};
 use crate::tilemap::LevelSize;
@@ -259,22 +260,26 @@ pub(crate) fn run(
         velocity.linvel = get_run_velocity(
             &velocity.linvel,
             target_speed * player_movement_settings.run_speed,
-            time.delta_seconds(),
+            time.delta_seconds()
         );
     }
 }
 
 pub(crate) fn boundary(
     level_size: Res<LevelSize>,
-    mut players: Query<&mut Transform, With<Player>>,
+    mut players: Query<(&mut Transform, &EntityInstance), With<Player>>,
 ) {
     // during startup, there is a few frames that level_size is not initialised
     if let Some(level_size) = level_size.0 {
-        for mut transform in players.iter_mut() {
+        for (mut transform, entity_instance) in players.iter_mut() {
+            // half width of player is the offset
+            // origin of player is the centre
+            let offset = entity_instance.width as f32 / 2.0;
+
             if transform.translation.x > level_size.x {
                 transform.translation.x = level_size.x;
-            } else if transform.translation.x < 0.0 {
-                transform.translation.x = 0.0;
+            } else if transform.translation.x <= offset {
+                transform.translation.x = offset;
             }
         }
     }
