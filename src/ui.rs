@@ -1,10 +1,9 @@
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
-use bevy_rapier2d::prelude::*;
 
 use move_vis::make_slider;
 
-use crate::physics::{set_gravity, set_jump_power_coefficient};
+use crate::physics::{set_gravity, set_jump_power_coefficient, RapierConfiguration};
 use crate::player::PlayerMovementSettings;
 
 pub struct UiPlugin;

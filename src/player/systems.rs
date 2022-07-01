@@ -1,12 +1,11 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
-use bevy_ecs_ldtk::prelude::EntityInstance;
-use bevy_rapier2d::prelude::*;
 
 use crate::input::{Action, ActionState};
+use crate::physics::*;
 use crate::player::{DashInput, Direction, JumpStatus, Player, PlayerMovementSettings};
-use crate::tilemap::LevelSize;
+use crate::tilemap::{EntityInstance, LevelSize};
 
 pub(crate) fn check_standing(
     time: Res<Time>,

@@ -1,8 +1,8 @@
 use bevy::prelude::*;
-use bevy_ecs_ldtk::prelude::*;
-use bevy_rapier2d::prelude::*;
+pub use bevy_rapier2d::prelude::*;
 
 use crate::player::PlayerMovementSettings;
+use crate::tilemap::LevelEvent;
 
 // pub const SCALE: f32 = 100.0;
 // pub const SCALE: f32 = 10.0;

@@ -1,9 +1,9 @@
 use std::collections::{HashMap, HashSet};
 
 use bevy::prelude::*;
-use bevy_ecs_ldtk::prelude::*;
-use bevy_rapier2d::prelude::*;
+pub use bevy_ecs_ldtk::prelude::*;
 
+use crate::physics::{Collider, RigidBody};
 use crate::player::PlayerBundle;
 
 #[derive(Debug, Default)]

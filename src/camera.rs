@@ -1,7 +1,7 @@
 use bevy::prelude::*;
-use bevy_ecs_ldtk::prelude::*;
 
 use crate::player::Player;
+use crate::tilemap::{LdtkLevel, LevelSelection};
 
 const ASPECT_RATIO: f32 = 16. / 9.;
 
