@@ -5,6 +5,7 @@ use bevy::{prelude::*, utils::Instant};
 use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::prelude::*;
 
+use crate::input::{Action, ActionState, InputMap};
 use move_vis::TrackMovement;
 
 mod systems;
@@ -182,11 +183,29 @@ impl LdtkEntity for ColliderBundle {
     }
 }
 
+#[derive(Bundle, Clone)]
+pub struct InputManagerBundle {
+    action_state: ActionState,
+    input_map: InputMap,
+}
+
+impl Default for InputManagerBundle {
+    fn default() -> Self {
+        Self {
+            action_state: ActionState::default(),
+            input_map: Action::get_input_map(),
+        }
+    }
+}
+
 #[derive(Clone, Bundle, LdtkEntity)]
 pub struct PlayerBundle {
     #[sprite_bundle("player.png")]
     #[bundle]
     pub sprite_bundle: SpriteBundle,
+
+    #[bundle]
+    input_manager: InputManagerBundle,
 
     #[from_entity_instance]
     #[bundle]
@@ -228,9 +247,9 @@ impl Plugin for PlayerPlugin {
             .add_system(systems::check_standing)
             .add_system_set(
                 SystemSet::new()
-                .with_system(systems::dash.after(systems::check_standing))
-                .with_system(systems::run.after(systems::check_standing))
-                .with_system(systems::jump.after(systems::check_standing))
+                    .with_system(systems::dash.after(systems::check_standing))
+                    .with_system(systems::run.after(systems::check_standing))
+                    .with_system(systems::jump.after(systems::check_standing)),
             )
             .add_system_to_stage(CoreStage::PostUpdate, systems::boundary);
     }

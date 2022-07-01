@@ -1,5 +1,6 @@
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 mod camera;
+mod input;
 mod physics;
 mod player;
 mod tilemap;
@@ -11,6 +12,7 @@ use bevy_inspector_egui::WorldInspectorPlugin;
 use move_vis::MoveVisPlugin;
 
 use camera::CameraPlugin;
+use input::InputPlugin;
 use physics::PhysicsPlugin;
 use player::PlayerPlugin;
 use tilemap::TilemapPlugin;
@@ -22,6 +24,7 @@ pub fn run() {
         .add_plugin(WorldInspectorPlugin::new())
         .add_plugin(CameraPlugin)
         .add_plugin(TilemapPlugin)
+        .add_plugin(InputPlugin)
         .add_plugin(MoveVisPlugin)
         .add_plugin(PhysicsPlugin)
         .add_plugin(PlayerPlugin)

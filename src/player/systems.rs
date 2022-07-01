@@ -1,9 +1,10 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
-use bevy_rapier2d::prelude::*;
 use bevy_ecs_ldtk::prelude::EntityInstance;
+use bevy_rapier2d::prelude::*;
 
+use crate::input::{Action, ActionState};
 use crate::player::{DashInput, Direction, JumpStatus, Player, PlayerMovementSettings};
 use crate::tilemap::LevelSize;
 
@@ -22,15 +23,22 @@ pub(crate) fn check_standing(
 pub(crate) fn dash(
     time: Res<Time>,
     mut dash_input: Local<DashInput>,
-    input: Res<Input<KeyCode>>,
-    mut query: Query<(Entity, &mut Velocity, &mut GravityScale, &mut Player)>,
+    mut query: Query<(
+        Entity,
+        &mut Velocity,
+        &mut GravityScale,
+        &mut Player,
+        &ActionState,
+    )>,
     rapier_context: Res<RapierContext>,
     player_movement_settings: Res<PlayerMovementSettings>,
 ) {
-    for (player_entity, mut velocity, mut gravity_scale, mut player) in query.iter_mut() {
-        let dir = if input.just_pressed(KeyCode::A) || input.just_pressed(KeyCode::Left) {
+    for (player_entity, mut velocity, mut gravity_scale, mut player, action_state) in
+        query.iter_mut()
+    {
+        let dir = if action_state.just_pressed(Action::Left) {
             Direction::Left
-        } else if input.just_pressed(KeyCode::D) || input.just_pressed(KeyCode::Right) {
+        } else if action_state.just_pressed(Action::Right) {
             Direction::Right
         } else {
             Direction::Neutral
@@ -120,20 +128,19 @@ pub(crate) fn get_standing_normal(
 }
 pub(crate) fn jump(
     time: Res<Time>,
-    input: Res<Input<KeyCode>>,
-    mut query: Query<(Entity, &mut Velocity, &mut Player)>,
+    mut query: Query<(Entity, &mut Velocity, &mut Player, &ActionState)>,
     player_movement_settings: Res<PlayerMovementSettings>,
     rapier_context: Res<RapierContext>,
     rapier_config: Res<RapierConfiguration>,
 ) {
-    let pressed_jump = input.pressed(KeyCode::Space);
-
     // let jump_impulse = 10000.0; // SCALE = 1.0
     // let jump_impulse = 100.0;  // SCALE = 10.0
     // let jump_impulse = 1.0;   // SCALE = 100.0
     // let jump_impulse = player_movement_settings.jump_impulse / SCALE.powf(2.0);
 
-    for (player_entity, mut velocity, mut player) in query.iter_mut() {
+    for (player_entity, mut velocity, mut player, action_state) in query.iter_mut() {
+        let pressed_jump = action_state.pressed(Action::Jump);
+
         // find a normal of the standing ground where the player stands on
         let mut standing_normal = get_standing_normal(&rapier_context, &player_entity);
 
@@ -172,9 +179,9 @@ pub(crate) fn jump(
                 // // wall grab and slide
                 if normal.x.abs() == 1.0
                     && normal.y == 0.0
-                    && (input.pressed(KeyCode::D) || input.pressed(KeyCode::A))
+                    && (action_state.pressed(Action::Right) || action_state.pressed(Action::Left))
                 {
-                    if input.just_pressed(KeyCode::Space) {
+                    if action_state.just_pressed(Action::Jump) {
                         return JumpStatus::InitiateJump;
                     }
                     return JumpStatus::WallSliding;
@@ -244,23 +251,22 @@ pub(crate) fn jump(
 }
 pub(crate) fn run(
     time: Res<Time>,
-    input: Res<Input<KeyCode>>,
-    mut query: Query<&mut Velocity, With<Player>>,
+    mut query: Query<(&mut Velocity, &ActionState), With<Player>>,
     player_movement_settings: Res<PlayerMovementSettings>,
 ) {
-    let target_speed: f32 = if input.pressed(KeyCode::A) || input.pressed(KeyCode::Left) {
-        -1.0
-    } else if input.pressed(KeyCode::D) || input.pressed(KeyCode::Right) {
-        1.0
-    } else {
-        0.0
-    };
+    for (mut velocity, action_state) in query.iter_mut() {
+        let target_speed: f32 = if action_state.pressed(Action::Left) {
+            -1.0
+        } else if action_state.pressed(Action::Right) {
+            1.0
+        } else {
+            0.0
+        };
 
-    for mut velocity in query.iter_mut() {
         velocity.linvel = get_run_velocity(
             &velocity.linvel,
             target_speed * player_movement_settings.run_speed,
-            time.delta_seconds()
+            time.delta_seconds(),
         );
     }
 }
