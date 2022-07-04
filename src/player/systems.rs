@@ -4,7 +4,7 @@ use bevy::prelude::*;
 
 use crate::input::{Action, ActionState};
 use crate::physics::*;
-use crate::player::{DashInput, Direction, JumpStatus, Player, PlayerMovementSettings};
+use crate::player::{DashInput, DeathEvent, Direction, JumpStatus, Player, PlayerMovementSettings};
 use crate::tilemap::{EntityInstance, LevelSize};
 use crate::weapon::spawn_projectile;
 
@@ -309,5 +309,24 @@ pub(crate) fn attack(mut cmd: Commands, players: Query<(&Transform, &ActionState
         if action_state.just_pressed(Action::Attack) {
             spawn_projectile(&mut cmd, &transform.translation, player);
         }
+    }
+}
+
+pub(crate) fn fall_death(
+    mut death_event: EventWriter<DeathEvent>,
+    players: Query<(Entity, &Transform), With<Player>>,
+) {
+    let offset = 10.0;
+    for (entity, transform) in players.iter() {
+        if transform.translation.y <= 0.0 - offset {
+            death_event.send(DeathEvent(entity));
+        }
+    }
+}
+
+pub(crate) fn process_death_event(mut death_event: EventReader<DeathEvent>) {
+    for entity in death_event.iter() {
+        debug!("Entity {:?} is dead!", entity);
+        todo!();
     }
 }

@@ -24,6 +24,9 @@ const TIME_TO_APEX: f32 = 0.4;
 
 const DEFAULT_GRAVITY_SCALE: f32 = 5.0;
 
+#[derive(Debug)]
+pub(crate) struct DeathEvent(Entity);
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub(crate) enum Direction {
     Left = -1,
@@ -231,6 +234,11 @@ pub(crate) struct PlayerBundle {
     pub worldly: Worldly,
 }
 
+#[derive(Clone, Debug, Eq, Hash, PartialEq, SystemLabel)]
+pub enum Label {
+    DeathSystems,
+}
+
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
@@ -249,6 +257,7 @@ impl Plugin for PlayerPlugin {
                 jump_break_factor: 200.0,
                 gravity_scale: DEFAULT_GRAVITY_SCALE,
             })
+            .add_event::<DeathEvent>()
             .add_system(systems::check_standing)
             .add_system_set(
                 SystemSet::new()
@@ -258,6 +267,12 @@ impl Plugin for PlayerPlugin {
             )
             .add_system(systems::attack)
             .add_system(systems::set_facing_direction)
+            .add_system_set(
+                SystemSet::new()
+                    .label(Label::DeathSystems)
+                    .with_system(systems::fall_death),
+            )
+            .add_system(systems::process_death_event.after(Label::DeathSystems))
             .add_system_to_stage(CoreStage::PostUpdate, systems::boundary);
     }
 }
