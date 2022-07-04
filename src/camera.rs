@@ -5,12 +5,30 @@ use crate::tilemap::{LdtkLevel, LevelSelection};
 
 const ASPECT_RATIO: f32 = 16. / 9.;
 
+#[derive(Component, Debug)]
+pub(crate) struct Offscreen {
+    offset: f32,
+}
+
+impl Offscreen {
+    fn new(offset: f32) -> Self {
+        Self { offset }
+    }
+}
+
+impl Default for Offscreen {
+    fn default() -> Self {
+        Self::new(10.0)
+    }
+}
+
 pub struct CameraPlugin;
 
 impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(setup)
-            .add_system(fit_camera_to_level);
+            .add_system(fit_camera_to_level)
+            .add_system(despawn_offscreens);
     }
 }
 
@@ -74,6 +92,28 @@ fn fit_camera_to_level(
 
                     camera_transform.translation.x += level_transform.translation.x;
                     camera_transform.translation.y += level_transform.translation.y;
+                }
+            }
+        }
+    }
+}
+
+pub(crate) fn despawn_offscreens(
+    mut cmd: Commands,
+    cameras: Query<(&Camera, &GlobalTransform), With<bevy::render::camera::Camera2d>>,
+    images: Res<Assets<Image>>,
+    offscreens: Query<(Entity, &Offscreen, &Transform)>,
+    windows: Res<Windows>,
+) {
+    for (entity, offscreen, transform) in offscreens.iter() {
+        for (camera, global_transform) in cameras.iter() {
+            if let Some(pos) =
+                camera.world_to_screen(&windows, &images, global_transform, transform.translation)
+            {
+                if let Some(window) = windows.get_primary() {
+                    if pos.x >= window.physical_width() as f32 + offscreen.offset {
+                        cmd.entity(entity).despawn_recursive();
+                    }
                 }
             }
         }

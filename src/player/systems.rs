@@ -6,6 +6,7 @@ use crate::input::{Action, ActionState};
 use crate::physics::*;
 use crate::player::{DashInput, Direction, JumpStatus, Player, PlayerMovementSettings};
 use crate::tilemap::{EntityInstance, LevelSize};
+use crate::weapon::spawn_projectile;
 
 pub(crate) fn check_standing(
     time: Res<Time>,
@@ -15,6 +16,19 @@ pub(crate) fn check_standing(
     for (player_entity, mut player) in query.iter_mut() {
         if get_standing_normal(&rapier_context, &player_entity).is_some() {
             player.last_stood_time = time.last_update();
+        }
+    }
+}
+
+pub(crate) fn set_facing_direction(mut query: Query<(&mut Player, &ActionState)>) {
+    for (mut player, action_state) in query.iter_mut() {
+        if action_state.pressed(Action::Left) && !matches!(player.facing_direction, Direction::Left)
+        {
+            player.facing_direction = Direction::Left;
+        } else if action_state.pressed(Action::Right)
+            && !matches!(player.facing_direction, Direction::Right)
+        {
+            player.facing_direction = Direction::Right;
         }
     }
 }
@@ -286,6 +300,14 @@ pub(crate) fn boundary(
             } else if transform.translation.x <= offset {
                 transform.translation.x = offset;
             }
+        }
+    }
+}
+
+pub(crate) fn attack(mut cmd: Commands, players: Query<(&Transform, &ActionState, &Player)>) {
+    for (transform, action_state, player) in players.iter() {
+        if action_state.just_pressed(Action::Attack) {
+            spawn_projectile(&mut cmd, &transform.translation, player);
         }
     }
 }

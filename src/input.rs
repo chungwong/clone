@@ -11,6 +11,7 @@ pub(crate) enum Action {
     Right,
     Up,
     Down,
+    Attack,
 }
 
 pub(crate) type ActionState = OriginalActionState<Action>;
@@ -24,6 +25,7 @@ impl Action {
             (Self::Right, KeyCode::D),
             (Self::Up, KeyCode::W),
             (Self::Down, KeyCode::S),
+            (Self::Attack, KeyCode::J),
         ])
     }
 }

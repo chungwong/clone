@@ -25,14 +25,14 @@ const TIME_TO_APEX: f32 = 0.4;
 const DEFAULT_GRAVITY_SCALE: f32 = 5.0;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-enum Direction {
+pub(crate) enum Direction {
     Left = -1,
     Neutral = 0,
     Right = 1,
 }
 
 impl Direction {
-    fn to_f32(self) -> f32 {
+    pub(crate) fn to_f32(self) -> f32 {
         match self {
             Self::Left => -1.0,
             Self::Right => 1.0,
@@ -92,7 +92,7 @@ pub struct PlayerMovementSettings {
 }
 
 #[derive(Clone, Debug)]
-enum JumpStatus {
+pub(crate) enum JumpStatus {
     CanJump,
     InitiateJump,
     GoingUp,
@@ -102,20 +102,22 @@ enum JumpStatus {
 }
 
 #[derive(Clone, Component, Debug)]
-pub struct Player {
-    dashing: bool,
-    rising: bool,
-    is_jumping: bool,
-    wall_sliding: bool,
-    last_stood_normal: Vec2,
-    last_stood_time: Option<Instant>,
-    jump_status: JumpStatus,
+pub(crate) struct Player {
+    pub(crate) dashing: bool,
+    pub(crate) facing_direction: Direction,
+    pub(crate) rising: bool,
+    pub(crate) is_jumping: bool,
+    pub(crate) wall_sliding: bool,
+    pub(crate) last_stood_normal: Vec2,
+    pub(crate) last_stood_time: Option<Instant>,
+    pub(crate) jump_status: JumpStatus,
 }
 
 impl Default for Player {
     fn default() -> Self {
         Self {
             dashing: false,
+            facing_direction: Direction::Right,
             rising: false,
             is_jumping: false,
             wall_sliding: false,
@@ -202,7 +204,7 @@ impl Default for InputManagerBundle {
 }
 
 #[derive(Clone, Bundle, LdtkEntity)]
-pub struct PlayerBundle {
+pub(crate) struct PlayerBundle {
     #[sprite_bundle("player.png")]
     #[bundle]
     pub sprite_bundle: SpriteBundle,
@@ -220,7 +222,7 @@ pub struct PlayerBundle {
 
     pub track_movement: TrackMovement,
 
-    pub player: Player,
+    pub(crate) player: Player,
 
     #[from_entity_instance]
     entity_instance: EntityInstance,
@@ -254,6 +256,8 @@ impl Plugin for PlayerPlugin {
                     .with_system(systems::run.after(systems::check_standing))
                     .with_system(systems::jump.after(systems::check_standing)),
             )
+            .add_system(systems::attack)
+            .add_system(systems::set_facing_direction)
             .add_system_to_stage(CoreStage::PostUpdate, systems::boundary);
     }
 }
