@@ -54,7 +54,7 @@ pub(crate) fn spawn_projectile(cmd: &mut Commands, translation: &Vec3, player: &
         ..default()
     })
     .insert(RigidBody::KinematicVelocityBased)
-    .insert(Sensor(true))
+    .insert(Sensor)
     .insert(Collider::ball(1.0))
     .insert(Velocity {
         linvel: Vec2::new(300.0 * player.facing_direction.to_f32(), 0.0),

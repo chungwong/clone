@@ -655,6 +655,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_rapier2d"
+version = "0.14.1"
+source = "git+https://github.com/dimforge/bevy_rapier?rev=aa19749#aa1974911c11ae69e35e00c48b4fb67d74fd4430"
+dependencies = [
+ "bevy",
+ "bitflags",
+ "log",
+ "nalgebra",
+ "rapier2d",
+]
+
+[[package]]
 name = "bevy_reflect"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2400,7 +2412,7 @@ source = "git+https://github.com/chungwong/move_vis.git#8518834b91959c0110760bf6
 dependencies = [
  "bevy",
  "bevy_egui",
- "bevy_rapier2d",
+ "bevy_rapier2d 0.14.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "heron",
 ]
 
@@ -3102,7 +3114,7 @@ dependencies = [
  "bevy-inspector-egui",
  "bevy_ecs_ldtk",
  "bevy_egui",
- "bevy_rapier2d",
+ "bevy_rapier2d 0.14.1 (git+https://github.com/dimforge/bevy_rapier?rev=aa19749)",
  "float-ord",
  "leafwing-input-manager",
  "move_vis",

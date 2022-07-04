@@ -7,9 +7,7 @@ use move_vis::TrackMovement;
 
 use crate::input::{Action, ActionState, InputMap};
 use crate::physics::*;
-use crate::tilemap::{
-    EntityInstance, LayerInstance, LdtkEntity, LdtkIntCell, TilesetDefinition, Worldly,
-};
+use crate::tilemap::{EntityInstance, LdtkEntity, LdtkIntCell, Worldly};
 
 mod systems;
 
@@ -131,8 +129,9 @@ impl Default for Player {
     }
 }
 
-#[derive(Bundle, Clone, Debug, Default, LdtkIntCell)]
+#[derive(Bundle, Clone, Default, LdtkIntCell)]
 pub struct PlayerPhysicsBundle {
+    pub collider: Collider,
     pub collider_mass_properties: ColliderMassProperties,
     pub damping: Damping,
     pub external_impulse: ExternalImpulse,
@@ -146,8 +145,12 @@ pub struct PlayerPhysicsBundle {
 }
 
 impl From<EntityInstance> for PlayerPhysicsBundle {
-    fn from(_: EntityInstance) -> PlayerPhysicsBundle {
+    fn from(entity_instance: EntityInstance) -> PlayerPhysicsBundle {
         Self {
+            collider: Collider::cuboid(
+                entity_instance.width as f32 / 2.0,
+                entity_instance.height as f32 / 2.0,
+            ),
             collider_mass_properties: ColliderMassProperties::Density(1.0),
             damping: Damping {
                 linear_damping: 10.0,
@@ -164,29 +167,6 @@ impl From<EntityInstance> for PlayerPhysicsBundle {
             rigid_body: RigidBody::Dynamic,
             velocity: Velocity::zero(),
             ccd: Ccd::enabled(),
-        }
-    }
-}
-
-#[derive(Clone, Bundle)]
-pub struct ColliderBundle {
-    pub collider: Collider,
-}
-
-impl LdtkEntity for ColliderBundle {
-    fn bundle_entity(
-        entity_instance: &EntityInstance,
-        _: &LayerInstance,
-        _: Option<&Handle<Image>>,
-        _: Option<&TilesetDefinition>,
-        _: &AssetServer,
-        _: &mut Assets<TextureAtlas>,
-    ) -> Self {
-        Self {
-            collider: Collider::cuboid(
-                entity_instance.width as f32 / 2.0,
-                entity_instance.height as f32 / 2.0,
-            ),
         }
     }
 }
@@ -218,10 +198,6 @@ pub(crate) struct PlayerBundle {
     #[from_entity_instance]
     #[bundle]
     pub player_physics_bundle: PlayerPhysicsBundle,
-
-    #[ldtk_entity]
-    #[bundle]
-    pub collider: ColliderBundle,
 
     pub track_movement: TrackMovement,
 
