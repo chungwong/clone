@@ -6,6 +6,9 @@ pub use bevy_ecs_ldtk::prelude::*;
 use crate::physics::{Collider, RigidBody};
 use crate::player::PlayerBundle;
 
+pub(crate) mod check_point;
+use crate::tilemap::check_point::CheckPointPlugin;
+
 #[derive(Debug, Default)]
 pub struct LevelSize(pub Option<Vec2>);
 

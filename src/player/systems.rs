@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use crate::input::{Action, ActionState};
 use crate::physics::*;
 use crate::player::{DashInput, DeathEvent, Direction, JumpStatus, Player, PlayerMovementSettings};
-use crate::tilemap::{EntityInstance, LevelSize};
+use crate::tilemap::{check_point::LastCheckPoint, EntityInstance, LevelSelection, LevelSize};
 use crate::weapon::spawn_projectile;
 
 pub(crate) fn check_standing(
@@ -324,9 +324,19 @@ pub(crate) fn fall_death(
     }
 }
 
-pub(crate) fn process_death_event(mut death_event: EventReader<DeathEvent>) {
-    for entity in death_event.iter() {
-        debug!("Entity {:?} is dead!", entity);
-        todo!();
+pub(crate) fn process_death_event(
+    mut death_events: EventReader<DeathEvent>,
+    mut players: Query<(&mut Transform, &LastCheckPoint), With<Player>>,
+    level_selection: Res<LevelSelection>,
+) {
+    for DeathEvent(dead_player) in death_events.iter() {
+        if let Ok((mut transform, last_check_point)) = players.get_mut(*dead_player) {
+            match (&last_check_point.level, level_selection.as_ref()) {
+                (LevelSelection::Uid(a), LevelSelection::Uid(b)) if a == b => {
+                    transform.translation = last_check_point.coordinate
+                }
+                _ => (),
+            }
+        }
     }
 }
