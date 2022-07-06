@@ -227,13 +227,17 @@ pub fn spawn_wall_collision(
                                 / 2.,
                         ))
                         .insert(RigidBody::Fixed)
-                        .insert_bundle(TransformBundle::from(Transform::from_xyz(
+                        // There could be a bug in bevy_rapier, adding Transform
+                        // will break the position of colliders
+                        //
+                        //.insert_bundle(TransformBundle::from(Transform::from_xyz(
+                        .insert(GlobalTransform::from_xyz(
                             (merged_grid.left + merged_grid.right + 1) as f32 * grid_size as f32
                                 / 2.,
                             (merged_grid.bottom + merged_grid.top + 1) as f32 * grid_size as f32
                                 / 2.,
                             0.,
-                        )))
+                        ))
                         // Making the collider a child of the level serves two purposes:
                         // 1. Adjusts the transforms to be relative to the level for free
                         // 2. the colliders will be despawned automatically when levels unload
