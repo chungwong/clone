@@ -1,3 +1,5 @@
+#![allow(clippy::forget_non_drop)]
+
 use std::collections::{HashMap, HashSet};
 
 use bevy::prelude::*;

@@ -1,3 +1,5 @@
+#![allow(clippy::forget_non_drop)]
+
 use std::convert::TryFrom;
 use std::time::Duration;
 
