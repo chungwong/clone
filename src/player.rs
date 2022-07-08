@@ -9,7 +9,7 @@ use move_vis::TrackMovement;
 
 use crate::input::{Action, ActionState, InputMap};
 use crate::physics::*;
-use crate::tilemap::{EntityInstance, LdtkEntity, LdtkIntCell, Worldly};
+use crate::tilemap::{EntityInstance, FieldValue, LdtkEntity, LdtkIntCell, Worldly};
 
 mod systems;
 
@@ -23,6 +23,28 @@ const JUMP_HEIGHT: f32 = 4.0;
 const TIME_TO_APEX: f32 = 0.4;
 
 const DEFAULT_GRAVITY_SCALE: f32 = 5.0;
+
+#[derive(Clone, Component, Debug, Default, Reflect)]
+#[reflect(Component)]
+pub(crate) struct Health(pub(crate) u32);
+
+impl From<EntityInstance> for Health {
+    fn from(entity_instance: EntityInstance) -> Self {
+        let field_instances = entity_instance
+            .field_instances
+            .iter()
+            .find(|f| f.identifier == "HP")
+            .unwrap_or_else(|| panic!("HP not set for {:?}", entity_instance));
+
+        match field_instances.value {
+            FieldValue::Int(Some(hp)) if hp > 0 => Self(hp as u32),
+            FieldValue::Int(Some(hp)) if hp == 0 => {
+                panic!("{}", &format!("HP cannot be 0 {:?}", field_instances))
+            }
+            _ => panic!("{}", &format!("Wrong HP type {:?}", field_instances)),
+        }
+    }
+}
 
 #[derive(Debug)]
 pub(crate) struct DeathEvent(Entity);
@@ -210,6 +232,9 @@ pub(crate) struct PlayerBundle {
 
     #[worldly]
     pub worldly: Worldly,
+
+    #[from_entity_instance]
+    pub(crate) hp: Health,
 }
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq, SystemLabel)]
@@ -248,6 +273,7 @@ impl Plugin for PlayerPlugin {
             .add_system_set(
                 SystemSet::new()
                     .label(Label::DeathSystems)
+                    .with_system(systems::hp_death)
                     .with_system(systems::fall_death),
             )
             .add_system(systems::process_death_event.after(Label::DeathSystems))

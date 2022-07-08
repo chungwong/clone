@@ -3,7 +3,7 @@
 use std::collections::{HashMap, HashSet};
 
 use bevy::prelude::*;
-pub use bevy_ecs_ldtk::prelude::*;
+pub use bevy_ecs_ldtk::{prelude::*, utils::ldtk_pixel_coords_to_translation_pivoted};
 
 use crate::physics::{Collider, RigidBody};
 use crate::player::PlayerBundle;

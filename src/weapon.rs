@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::camera::Offscreen;
 use crate::physics::*;
-use crate::player::Player;
+use crate::player::{Health, Player};
 
 #[derive(Component, Debug, Default)]
 pub(crate) struct Projectile {
@@ -31,12 +31,17 @@ fn despawn_projectiles(
     mut cmd: Commands,
     projectiles: Query<(Entity, &Projectile, &CollidingEntities, &Transform)>,
     sensors: Query<Entity, With<Sensor>>,
+    mut healths: Query<&mut Health, Without<Player>>,
 ) {
     for (entity, projectile, colliding_entities, transform) in projectiles.iter() {
         for colliding_entity in colliding_entities.iter() {
             // if projectile collides with a sensor, do nothing
             if sensors.get(colliding_entity).is_err() {
                 cmd.entity(entity).despawn_recursive();
+            }
+
+            if let Ok(mut health) = healths.get_mut(colliding_entity) {
+                health.0 = 0;
             }
         }
 
