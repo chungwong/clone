@@ -26,7 +26,19 @@ const DEFAULT_GRAVITY_SCALE: f32 = 5.0;
 
 #[derive(Clone, Component, Debug, Default, Reflect)]
 #[reflect(Component)]
-pub(crate) struct Health(pub(crate) u32);
+pub(crate) struct Health {
+    pub(crate) current: u32,
+    pub(crate) max: u32,
+}
+
+impl Health {
+    pub fn new(hp: u32) -> Self {
+        Self {
+            current: hp,
+            max: hp,
+        }
+    }
+}
 
 impl From<EntityInstance> for Health {
     fn from(entity_instance: EntityInstance) -> Self {
@@ -37,7 +49,7 @@ impl From<EntityInstance> for Health {
             .unwrap_or_else(|| panic!("HP not set for {:?}", entity_instance));
 
         match field_instances.value {
-            FieldValue::Int(Some(hp)) if hp > 0 => Self(hp as u32),
+            FieldValue::Int(Some(hp)) if hp > 0 => Self::new(hp as u32),
             FieldValue::Int(Some(hp)) if hp == 0 => {
                 panic!("{}", &format!("HP cannot be 0 {:?}", field_instances))
             }

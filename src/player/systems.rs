@@ -331,7 +331,7 @@ pub(crate) fn hp_death(
     players: Query<(Entity, &Health), With<Player>>,
 ) {
     for (entity, health) in players.iter() {
-        if health.0 == 0 {
+        if health.current == 0 {
             death_event.send(DeathEvent(entity));
         }
     }

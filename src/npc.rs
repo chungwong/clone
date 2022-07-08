@@ -148,7 +148,7 @@ fn setup(mut enemies: Query<&mut Sprite, Added<Enemy>>) {
 
 fn despawn(mut cmd: Commands, enemies: Query<(Entity, &Health), (With<Enemy>, Changed<Health>)>) {
     for (entity, health) in enemies.iter() {
-        if health.0 == 0 {
+        if health.current == 0 {
             cmd.entity(entity).despawn_recursive();
         }
     }

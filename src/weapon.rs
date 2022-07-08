@@ -41,7 +41,7 @@ fn despawn_projectiles(
             }
 
             if let Ok(mut health) = healths.get_mut(colliding_entity) {
-                health.0 = 0;
+                health.current = 0;
             }
         }
 
