@@ -137,7 +137,7 @@
 			"tileRenderMode": "FitInside",
 			"tileRect": null,
 			"nineSliceBorders": [],
-			"maxCount": 0,
+			"maxCount": 1,
 			"limitScope": "PerLevel",
 			"limitBehavior": "MoveLastOne",
 			"pivotX": 0,
@@ -416,20 +416,6 @@
 					"gridTiles": [],
 					"entityInstances": [
 						{
-							"__identifier": "Player",
-							"__grid": [27,23],
-							"__pivot": [0,1],
-							"__tags": [],
-							"__tile": null,
-							"__smartColor": "#94D9B3",
-							"iid": "150308a0-b4d0-11ec-873f-3f0bb4597a0c",
-							"width": 16,
-							"height": 16,
-							"defUid": 2,
-							"px": [432,384],
-							"fieldInstances": [{ "__identifier": "HP", "__value": 1, "__type": "Int", "__tile": null, "defUid": 11, "realEditorValues": [] }]
-						},
-						{
 							"__identifier": "Mob",
 							"__grid": [41,23],
 							"__pivot": [0,1],
@@ -448,6 +434,20 @@
 									"params": ["32,23"]
 								}] }
 							]
+						},
+						{
+							"__identifier": "Player",
+							"__grid": [27,23],
+							"__pivot": [0,1],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#94D9B3",
+							"iid": "150308a0-b4d0-11ec-873f-3f0bb4597a0c",
+							"width": 16,
+							"height": 16,
+							"defUid": 2,
+							"px": [432,384],
+							"fieldInstances": [{ "__identifier": "HP", "__value": 1, "__type": "Int", "__tile": null, "defUid": 11, "realEditorValues": [] }]
 						}
 					]
 				},

@@ -4,16 +4,18 @@ use crate::camera::Offscreen;
 use crate::physics::*;
 use crate::player::{Health, Player};
 
-#[derive(Component, Debug, Default)]
+#[derive(Component, Default)]
 pub(crate) struct Projectile {
+    damage: u32,
     started_at: Vec2,
     max_travel_distance: Option<f32>,
 }
 
 impl Projectile {
-    pub(crate) fn new(distance: Option<f32>, started_at: Vec2) -> Self {
+    pub(crate) fn new(damage: u32, max_travel_distance: Option<f32>, started_at: Vec2) -> Self {
         Self {
-            max_travel_distance: distance,
+            damage,
+            max_travel_distance,
             started_at,
         }
     }
@@ -41,7 +43,7 @@ fn despawn_projectiles(
             }
 
             if let Ok(mut health) = healths.get_mut(colliding_entity) {
-                health.current = 0;
+                health.current = health.current.saturating_sub(projectile.damage);
             }
         }
 
@@ -83,5 +85,5 @@ pub(crate) fn spawn_projectile(cmd: &mut Commands, translation: &Vec3, player: &
     )
     .insert(CollidingEntities::default())
     .insert(Offscreen::default())
-    .insert(Projectile::new(None, translation.truncate()));
+    .insert(Projectile::new(1, None, translation.truncate()));
 }
