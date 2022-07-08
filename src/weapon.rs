@@ -30,12 +30,17 @@ impl Plugin for WeaponPlugin {
 fn despawn_projectiles(
     mut cmd: Commands,
     projectiles: Query<(Entity, &Projectile, &CollidingEntities, &Transform)>,
+    sensors: Query<Entity, With<Sensor>>,
 ) {
     for (entity, projectile, colliding_entities, transform) in projectiles.iter() {
-        if !colliding_entities.is_empty() {
-            cmd.entity(entity).despawn_recursive();
+        for colliding_entity in colliding_entities.iter() {
+            // if projectile collides with a sensor, do nothing
+            if sensors.get(colliding_entity).is_err() {
+                cmd.entity(entity).despawn_recursive();
+            }
         }
 
+        // make sure projectile only travel for the desired distance
         if let Some(max_travel_distance) = projectile.max_travel_distance {
             if (transform.translation.x - projectile.started_at.x) >= max_travel_distance {
                 cmd.entity(entity).despawn_recursive();
@@ -45,9 +50,12 @@ fn despawn_projectiles(
 }
 
 pub(crate) fn spawn_projectile(cmd: &mut Commands, translation: &Vec3, player: &Player) {
+    let dir = player.facing_direction.to_f32();
+    let offset = Vec3::new(10.0 * dir, 0.0, 0.0);
+
     cmd.spawn_bundle(SpriteBundle {
         transform: Transform {
-            translation: *translation + Vec3::new(10.0, 0.0, 0.0),
+            translation: *translation + offset,
             scale: Vec3::new(2.0, 2.0, 0.0),
             ..default()
         },
@@ -57,7 +65,7 @@ pub(crate) fn spawn_projectile(cmd: &mut Commands, translation: &Vec3, player: &
     .insert(Sensor)
     .insert(Collider::ball(1.0))
     .insert(Velocity {
-        linvel: Vec2::new(300.0 * player.facing_direction.to_f32(), 0.0),
+        linvel: Vec2::new(300.0 * dir, 0.0),
         ..default()
     })
     .insert(GravityScale(0.0))
