@@ -20,12 +20,12 @@ pub(crate) type InputMap = OriginalInputMap<Action>;
 impl Action {
     pub(crate) fn get_input_map() -> InputMap {
         InputMap::new([
-            (Self::Jump, KeyCode::Space),
-            (Self::Left, KeyCode::A),
-            (Self::Right, KeyCode::D),
-            (Self::Up, KeyCode::W),
-            (Self::Down, KeyCode::S),
-            (Self::Attack, KeyCode::J),
+            (KeyCode::Space, Self::Jump),
+            (KeyCode::A, Self::Left),
+            (KeyCode::D, Self::Right),
+            (KeyCode::W, Self::Up),
+            (KeyCode::S, Self::Down),
+            (KeyCode::J, Self::Attack),
         ])
     }
 }
