@@ -1,20 +1,30 @@
 use bevy::prelude::*;
+
+use bevy_egui::EguiPlugin;
+#[cfg(feature = "debug")]
 use bevy_egui::{egui, EguiContext};
 
+#[cfg(feature = "debug")]
 use move_vis::make_slider;
 
+#[cfg(feature = "debug")]
 use crate::physics::{set_gravity, set_jump_power_coefficient, RapierConfiguration};
+#[cfg(feature = "debug")]
 use crate::player::PlayerMovementSettings;
 
 pub struct UiPlugin;
 
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(ui_system);
+        app.add_plugin(EguiPlugin);
+
+        #[cfg(feature = "debug")]
+        app.add_system(movement_ui);
     }
 }
 
-fn ui_system(
+#[cfg(feature = "debug")]
+fn movement_ui(
     mut egui_context: ResMut<EguiContext>,
     mut player_movement_settings: ResMut<PlayerMovementSettings>,
     mut rapier_config: ResMut<RapierConfiguration>,

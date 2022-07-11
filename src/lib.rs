@@ -9,15 +9,11 @@ mod ui;
 mod weapon;
 
 use bevy::prelude::*;
-use bevy_inspector_egui::WorldInspectorPlugin;
-
-use move_vis::MoveVisPlugin;
 
 pub fn run() {
-    App::new()
-        .add_plugins(DefaultPlugins)
-        .add_plugin(WorldInspectorPlugin::new())
-        .add_plugin(MoveVisPlugin)
+    let mut app = App::new();
+
+    app.add_plugins(DefaultPlugins)
         .add_plugin(camera::CameraPlugin)
         .add_plugin(tilemap::TilemapPlugin)
         .add_plugin(input::InputPlugin)
@@ -25,6 +21,13 @@ pub fn run() {
         .add_plugin(physics::PhysicsPlugin)
         .add_plugin(player::PlayerPlugin)
         .add_plugin(ui::UiPlugin)
-        .add_plugin(weapon::WeaponPlugin)
-        .run();
+        .add_plugin(weapon::WeaponPlugin);
+
+    #[cfg(feature = "debug")]
+    app.add_plugin(move_vis::MoveVisPlugin);
+
+    #[cfg(feature = "debug")]
+    app.add_plugin(bevy_inspector_egui::WorldInspectorPlugin::new());
+
+    app.run();
 }
