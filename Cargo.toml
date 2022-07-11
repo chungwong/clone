@@ -13,6 +13,7 @@ bevy_egui = "0.14.0"
 bevy_rapier2d = "0.15.0"
 bevy-inspector-egui = "0.11.0"
 float-ord = "0.3.0"
+iyes_loopless = "0.6.0"
 leafwing-input-manager = "0.4.0"
 move_vis = { git = "https://github.com/chungwong/move_vis.git" }
 
