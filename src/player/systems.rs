@@ -297,8 +297,8 @@ pub(crate) fn boundary(
             // origin of player is the centre
             let offset = entity_instance.width as f32 / 2.0;
 
-            if transform.translation.x > level_size.x {
-                transform.translation.x = level_size.x;
+            if transform.translation.x > level_size.x - offset {
+                transform.translation.x = level_size.x - offset;
             } else if transform.translation.x <= offset {
                 transform.translation.x = offset;
             }
