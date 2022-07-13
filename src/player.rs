@@ -174,7 +174,6 @@ pub struct PlayerPhysicsBundle {
     pub external_force: ExternalForce,
     pub gravity_scale: GravityScale,
     pub locked_axes: LockedAxes,
-    pub mass_properties: MassProperties,
     pub rigid_body: RigidBody,
     pub velocity: Velocity,
     pub ccd: Ccd,
@@ -196,10 +195,6 @@ impl From<EntityInstance> for PlayerPhysicsBundle {
             external_force: ExternalForce::default(),
             gravity_scale: GravityScale(1.0),
             locked_axes: LockedAxes::ROTATION_LOCKED,
-            mass_properties: MassProperties {
-                mass: 1.0,
-                ..default()
-            },
             rigid_body: RigidBody::Dynamic,
             velocity: Velocity::zero(),
             ccd: Ccd::enabled(),
