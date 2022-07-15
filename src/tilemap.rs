@@ -7,6 +7,7 @@ pub use bevy_ecs_ldtk::{prelude::*, utils::ldtk_pixel_coords_to_translation_pivo
 
 use crate::physics::{Collider, RigidBody};
 use crate::player::PlayerBundle;
+use crate::state::{AppLooplessStateExt, ConditionSet, GameState};
 
 pub(crate) mod check_point;
 use crate::tilemap::check_point::CheckPointPlugin;
@@ -28,9 +29,14 @@ impl Plugin for TilemapPlugin {
                 set_clear_color: SetClearColor::FromLevelBackground,
                 ..Default::default()
             })
-            .add_startup_system(setup)
-            .add_system(spawn_wall_collision)
-            .add_system(set_boundary)
+            .add_enter_system(GameState::InGame, setup)
+            .add_system_set(
+                ConditionSet::new()
+                    .run_in_state(GameState::InGame)
+                    .with_system(spawn_wall_collision)
+                    .with_system(set_boundary)
+                    .into(),
+            )
             .add_plugin(CheckPointPlugin)
             .register_ldtk_int_cell_for_layer::<WallBundle>("Collisions", 1)
             .register_ldtk_entity::<PlayerBundle>("Player");

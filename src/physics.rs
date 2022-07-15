@@ -2,6 +2,7 @@ use bevy::prelude::*;
 pub use bevy_rapier2d::prelude::*;
 
 use crate::player::PlayerMovementSettings;
+use crate::state::{AppLooplessStateExt, ConditionSet, GameState};
 use crate::tilemap::LevelEvent;
 
 // pub const SCALE: f32 = 100.0;
@@ -14,8 +15,13 @@ impl Plugin for PhysicsPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(SCALE))
             .add_plugin(RapierDebugRenderPlugin::default())
-            .add_startup_system(setup)
-            .add_system(pause_physics_during_load);
+            .add_enter_system(GameState::InGame, setup)
+            .add_system_set(
+                ConditionSet::new()
+                    .run_in_state(GameState::InGame)
+                    .with_system(pause_physics_during_load)
+                    .into(),
+            );
     }
 }
 

@@ -3,6 +3,7 @@ use std::collections::{HashMap, HashSet};
 
 use crate::physics::*;
 use crate::player::Player;
+use crate::state::{ConditionSet, GameState};
 use crate::tilemap::{
     merge_grids, GridCoords, LayerInstance, LdtkIntCell, LdtkLevel, LevelSelection,
     RegisterLdtkObjects,
@@ -27,9 +28,14 @@ pub(crate) struct CheckPointPlugin;
 impl Plugin for CheckPointPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<LastCheckPoint>()
-            .add_system(save_last_check_point)
-            .add_system(spawn_check_points)
-            .add_system(save_initial_check_point)
+            .add_system_set(
+                ConditionSet::new()
+                    .run_in_state(GameState::InGame)
+                    .with_system(save_last_check_point)
+                    .with_system(spawn_check_points)
+                    .with_system(save_initial_check_point)
+                    .into(),
+            )
             .register_ldtk_int_cell_for_layer::<CheckPointBundle>("Check_Points", 1);
     }
 }

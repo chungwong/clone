@@ -11,6 +11,8 @@ use move_vis::make_slider;
 use crate::physics::{set_gravity, set_jump_power_coefficient, RapierConfiguration};
 #[cfg(feature = "debug")]
 use crate::player::PlayerMovementSettings;
+#[cfg(feature = "debug")]
+use crate::state::{ConditionSet, GameState};
 
 pub struct UiPlugin;
 
@@ -19,7 +21,12 @@ impl Plugin for UiPlugin {
         app.add_plugin(EguiPlugin);
 
         #[cfg(feature = "debug")]
-        app.add_system(movement_ui);
+        app.add_system_set(
+            ConditionSet::new()
+                .run_in_state(GameState::InGame)
+                .with_system(movement_ui)
+                .into(),
+        );
     }
 }
 

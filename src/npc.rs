@@ -4,6 +4,7 @@ use bevy::prelude::*;
 
 use crate::physics::*;
 use crate::player::Health;
+use crate::state::{ConditionSet, GameState};
 use crate::tilemap::{
     ldtk_pixel_coords_to_translation_pivoted, EntityInstance, FieldValue, LayerInstance,
     LdtkEntity, RegisterLdtkObjects, TilesetDefinition,
@@ -128,10 +129,14 @@ pub struct NpcPlugin;
 
 impl Plugin for NpcPlugin {
     fn build(&self, app: &mut App) {
-        app.register_ldtk_entity::<MobBundle>("Mob")
-            .add_system(setup)
-            .add_system(despawn)
-            .add_system(patrol);
+        app.register_ldtk_entity::<MobBundle>("Mob").add_system_set(
+            ConditionSet::new()
+                .run_in_state(GameState::InGame)
+                .with_system(setup)
+                .with_system(despawn)
+                .with_system(patrol)
+                .into(),
+        );
     }
 }
 

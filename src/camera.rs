@@ -1,6 +1,7 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, render::camera::Camera2d};
 
 use crate::player::Player;
+use crate::state::{ConditionSet, GameState};
 use crate::tilemap::{LdtkLevel, LevelSelection};
 
 const ASPECT_RATIO: f32 = 16. / 9.;
@@ -26,13 +27,18 @@ pub struct CameraPlugin;
 
 impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(setup)
-            .add_system(fit_camera_to_level)
-            .add_system(despawn_offscreens);
+        app.add_startup_system(setup).add_system_set(
+            ConditionSet::new()
+                .run_in_state(GameState::InGame)
+                .with_system(fit_camera_to_level)
+                .with_system(despawn_offscreens)
+                .into(),
+        );
     }
 }
 
 fn setup(mut cmd: Commands) {
+    cmd.spawn_bundle(UiCameraBundle::default());
     cmd.spawn_bundle(OrthographicCameraBundle::new_2d());
 }
 
@@ -42,7 +48,7 @@ fn fit_camera_to_level(
             &mut bevy::render::camera::OrthographicProjection,
             &mut Transform,
         ),
-        Without<Player>,
+        (Without<Player>, With<Camera2d>),
     >,
     player_query: Query<&Transform, With<Player>>,
     level_query: Query<

@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use crate::camera::Offscreen;
 use crate::physics::*;
 use crate::player::{Health, Player};
+use crate::state::{ConditionSet, GameState};
 
 #[derive(Component, Default)]
 pub(crate) struct Projectile {
@@ -25,7 +26,12 @@ pub struct WeaponPlugin;
 
 impl Plugin for WeaponPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(despawn_projectiles);
+        app.add_system_set(
+            ConditionSet::new()
+                .run_in_state(GameState::InGame)
+                .with_system(despawn_projectiles)
+                .into(),
+        );
     }
 }
 

@@ -9,6 +9,7 @@ use move_vis::TrackMovement;
 
 use crate::input::{Action, ActionState, InputMap};
 use crate::physics::*;
+use crate::state::{ConditionSet, GameState};
 use crate::tilemap::{EntityInstance, FieldValue, LdtkEntity, LdtkIntCell, Worldly};
 
 mod systems;
@@ -246,7 +247,9 @@ pub(crate) struct PlayerBundle {
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq, SystemLabel)]
 pub enum Label {
+    CheckStanding,
     DeathSystems,
+    Movement,
 }
 
 pub struct PlayerPlugin;
@@ -268,22 +271,46 @@ impl Plugin for PlayerPlugin {
                 gravity_scale: DEFAULT_GRAVITY_SCALE,
             })
             .add_event::<DeathEvent>()
-            .add_system(systems::check_standing)
             .add_system_set(
-                SystemSet::new()
-                    .with_system(systems::dash.after(systems::check_standing))
-                    .with_system(systems::run.after(systems::check_standing))
-                    .with_system(systems::jump.after(systems::check_standing)),
+                ConditionSet::new()
+                    .run_in_state(GameState::InGame)
+                    .label(Label::CheckStanding)
+                    .with_system(systems::check_standing)
+                    .with_system(systems::set_facing_direction)
+                    .into(),
             )
-            .add_system(systems::attack)
-            .add_system(systems::set_facing_direction)
             .add_system_set(
-                SystemSet::new()
+                ConditionSet::new()
+                    .run_in_state(GameState::InGame)
+                    .label(Label::Movement)
+                    .after(Label::CheckStanding)
+                    .with_system(systems::dash)
+                    .with_system(systems::run)
+                    .with_system(systems::jump)
+                    .with_system(systems::attack)
+                    .into(),
+            )
+            .add_system_set(
+                ConditionSet::new()
                     .label(Label::DeathSystems)
+                    .run_in_state(GameState::InGame)
                     .with_system(systems::hp_death)
-                    .with_system(systems::fall_death),
+                    .with_system(systems::fall_death)
+                    .into(),
             )
-            .add_system(systems::process_death_event.after(Label::DeathSystems))
-            .add_system_to_stage(CoreStage::PostUpdate, systems::boundary);
+            .add_system_set(
+                ConditionSet::new()
+                    .run_in_state(GameState::InGame)
+                    .after(Label::DeathSystems)
+                    .with_system(systems::process_death_event)
+                    .into(),
+            )
+            .add_system_set_to_stage(
+                CoreStage::PostUpdate,
+                ConditionSet::new()
+                    .run_in_state(GameState::InGame)
+                    .with_system(systems::boundary)
+                    .into(),
+            );
     }
 }
