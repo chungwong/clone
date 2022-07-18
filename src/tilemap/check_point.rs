@@ -84,7 +84,10 @@ fn save_initial_check_point(
 
 fn save_last_check_point(
     mut cmd: Commands,
-    check_points: Query<(&Transform, &CollidingEntities, &CheckPoint), Changed<CollidingEntities>>,
+    check_points: Query<
+        (&GlobalTransform, &CollidingEntities, &CheckPoint),
+        Changed<CollidingEntities>,
+    >,
     mut players: Query<(Entity, Option<&mut LastCheckPoint>), With<Player>>,
     level_selection: Res<LevelSelection>,
 ) {
