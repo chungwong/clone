@@ -1,11 +1,8 @@
 use bevy::prelude::*;
-pub use leafwing_input_manager::prelude::{
-    ActionState as OriginalActionState, Actionlike, InputManagerPlugin,
-    InputMap as OriginalInputMap,
-};
+pub use leafwing_input_manager::prelude::{ActionState, Actionlike, InputManagerPlugin, InputMap};
 
 #[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug)]
-pub(crate) enum Action {
+pub(crate) enum PlayerAction {
     Jump,
     Left,
     Right,
@@ -14,11 +11,11 @@ pub(crate) enum Action {
     Attack,
 }
 
-pub(crate) type ActionState = OriginalActionState<Action>;
-pub(crate) type InputMap = OriginalInputMap<Action>;
+pub(crate) type PlayerActionState = ActionState<PlayerAction>;
+pub(crate) type PlayerInputMap = InputMap<PlayerAction>;
 
-impl Action {
-    pub(crate) fn get_input_map() -> InputMap {
+impl PlayerAction {
+    pub(crate) fn get_input_map() -> PlayerInputMap {
         InputMap::new([
             (KeyCode::Space, Self::Jump),
             (KeyCode::A, Self::Left),
@@ -30,10 +27,25 @@ impl Action {
     }
 }
 
+#[derive(Bundle, Clone)]
+pub(crate) struct PlayerInputManagerBundle {
+    action_state: PlayerActionState,
+    input_map: PlayerInputMap,
+}
+
+impl Default for PlayerInputManagerBundle {
+    fn default() -> Self {
+        Self {
+            action_state: PlayerActionState::default(),
+            input_map: PlayerAction::get_input_map(),
+        }
+    }
+}
+
 pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(InputManagerPlugin::<Action>::default());
+        app.add_plugin(InputManagerPlugin::<PlayerAction>::default());
     }
 }

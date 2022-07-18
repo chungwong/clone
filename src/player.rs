@@ -8,7 +8,7 @@ use bevy::{prelude::*, utils::Instant};
 use move_vis::TrackMovement;
 
 use crate::{
-    input::{Action, ActionState, InputMap},
+    input::PlayerInputManagerBundle,
     physics::*,
     state::{ConditionSet, GameState},
     tilemap::{EntityInstance, FieldValue, LdtkEntity, LdtkIntCell, Worldly},
@@ -205,21 +205,6 @@ impl From<EntityInstance> for PlayerPhysicsBundle {
     }
 }
 
-#[derive(Bundle, Clone)]
-pub struct InputManagerBundle {
-    action_state: ActionState,
-    input_map: InputMap,
-}
-
-impl Default for InputManagerBundle {
-    fn default() -> Self {
-        Self {
-            action_state: ActionState::default(),
-            input_map: Action::get_input_map(),
-        }
-    }
-}
-
 #[derive(Clone, Bundle, LdtkEntity)]
 pub(crate) struct PlayerBundle {
     #[sprite_bundle("player.png")]
@@ -227,7 +212,7 @@ pub(crate) struct PlayerBundle {
     pub sprite_bundle: SpriteBundle,
 
     #[bundle]
-    input_manager: InputManagerBundle,
+    input_manager: PlayerInputManagerBundle,
 
     #[from_entity_instance]
     #[bundle]
