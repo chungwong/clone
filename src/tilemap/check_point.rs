@@ -1,10 +1,13 @@
 use bevy::prelude::*;
 use std::collections::{HashMap, HashSet};
 
-use crate::physics::*;
-use crate::player::Player;
-use crate::state::{ConditionSet, GameState};
-use crate::tilemap::{
+use crate::{
+    physics::*,
+    player::Player,
+    state::{ConditionSet, GameState},
+};
+
+use super::{
     merge_grids, GridCoords, LayerInstance, LdtkIntCell, LdtkLevel, LevelSelection,
     RegisterLdtkObjects,
 };

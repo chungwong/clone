@@ -1,9 +1,11 @@
 use bevy::prelude::*;
 
-use crate::camera::Offscreen;
-use crate::physics::*;
-use crate::player::{Health, Player};
-use crate::state::{ConditionSet, GameState};
+use crate::{
+    camera::Offscreen,
+    physics::*,
+    player::{Health, Player},
+    state::{ConditionSet, GameState},
+};
 
 #[derive(Component, Default)]
 pub(crate) struct Projectile {

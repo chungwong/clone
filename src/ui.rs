@@ -8,11 +8,11 @@ use bevy_egui::{egui, EguiContext};
 use move_vis::make_slider;
 
 #[cfg(feature = "debug")]
-use crate::physics::{set_gravity, set_jump_power_coefficient, RapierConfiguration};
-#[cfg(feature = "debug")]
-use crate::player::PlayerMovementSettings;
-#[cfg(feature = "debug")]
-use crate::state::{ConditionSet, GameState};
+use crate::{
+    physics::{set_gravity, set_jump_power_coefficient, RapierConfiguration},
+    player::PlayerMovementSettings,
+    state::{ConditionSet, GameState},
+};
 
 pub struct UiPlugin;
 

@@ -1,9 +1,11 @@
 use bevy::prelude::*;
 pub use bevy_rapier2d::prelude::*;
 
-use crate::player::PlayerMovementSettings;
-use crate::state::{AppLooplessStateExt, ConditionSet, GameState};
-use crate::tilemap::LevelEvent;
+use crate::{
+    player::PlayerMovementSettings,
+    state::{AppLooplessStateExt, ConditionSet, GameState},
+    tilemap::LevelEvent,
+};
 
 // pub const SCALE: f32 = 100.0;
 // pub const SCALE: f32 = 10.0;

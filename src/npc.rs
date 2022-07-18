@@ -2,12 +2,14 @@
 
 use bevy::prelude::*;
 
-use crate::physics::*;
-use crate::player::Health;
-use crate::state::{ConditionSet, GameState};
-use crate::tilemap::{
-    ldtk_pixel_coords_to_translation_pivoted, EntityInstance, FieldValue, LayerInstance,
-    LdtkEntity, RegisterLdtkObjects, TilesetDefinition,
+use crate::{
+    physics::*,
+    player::Health,
+    state::{ConditionSet, GameState},
+    tilemap::{
+        ldtk_pixel_coords_to_translation_pivoted, EntityInstance, FieldValue, LayerInstance,
+        LdtkEntity, RegisterLdtkObjects, TilesetDefinition,
+    },
 };
 
 #[derive(Clone, Component, Default)]

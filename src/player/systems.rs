@@ -2,13 +2,14 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 
-use crate::input::{Action, ActionState};
-use crate::physics::*;
-use crate::player::{
-    DashInput, DeathEvent, Direction, Health, JumpStatus, Player, PlayerMovementSettings,
+use crate::{
+    input::{Action, ActionState},
+    physics::*,
+    tilemap::{check_point::LastCheckPoint, EntityInstance, LevelSelection, LevelSize},
+    weapon::spawn_projectile,
 };
-use crate::tilemap::{check_point::LastCheckPoint, EntityInstance, LevelSelection, LevelSize};
-use crate::weapon::spawn_projectile;
+
+use super::{DashInput, DeathEvent, Direction, Health, JumpStatus, Player, PlayerMovementSettings};
 
 pub(crate) fn check_standing(
     time: Res<Time>,

@@ -7,10 +7,12 @@ use bevy::{prelude::*, utils::Instant};
 
 use move_vis::TrackMovement;
 
-use crate::input::{Action, ActionState, InputMap};
-use crate::physics::*;
-use crate::state::{ConditionSet, GameState};
-use crate::tilemap::{EntityInstance, FieldValue, LdtkEntity, LdtkIntCell, Worldly};
+use crate::{
+    input::{Action, ActionState, InputMap},
+    physics::*,
+    state::{ConditionSet, GameState},
+    tilemap::{EntityInstance, FieldValue, LdtkEntity, LdtkIntCell, Worldly},
+};
 
 mod systems;
 

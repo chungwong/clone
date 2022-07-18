@@ -1,8 +1,10 @@
 use bevy::{prelude::*, render::camera::Camera2d};
 
-use crate::player::Player;
-use crate::state::{ConditionSet, GameState};
-use crate::tilemap::{LdtkLevel, LevelSelection};
+use crate::{
+    player::Player,
+    state::{ConditionSet, GameState},
+    tilemap::{LdtkLevel, LevelSelection},
+};
 
 const ASPECT_RATIO: f32 = 16. / 9.;
 

@@ -5,9 +5,11 @@ use std::collections::{HashMap, HashSet};
 use bevy::prelude::*;
 pub use bevy_ecs_ldtk::{prelude::*, utils::ldtk_pixel_coords_to_translation_pivoted};
 
-use crate::physics::{Collider, RigidBody};
-use crate::player::PlayerBundle;
-use crate::state::{AppLooplessStateExt, ConditionSet, GameState};
+use crate::{
+    physics::{Collider, RigidBody},
+    player::PlayerBundle,
+    state::{AppLooplessStateExt, ConditionSet, GameState},
+};
 
 pub(crate) mod check_point;
 use crate::tilemap::check_point::CheckPointPlugin;
