@@ -1,7 +1,6 @@
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 mod camera;
 mod input;
-mod menu;
 mod npc;
 mod physics;
 mod player;
@@ -21,7 +20,6 @@ pub fn run() {
         .add_plugin(camera::CameraPlugin)
         .add_plugin(tilemap::TilemapPlugin)
         .add_plugin(input::InputPlugin)
-        .add_plugin(menu::MenuPlugin)
         .add_plugin(npc::NpcPlugin)
         .add_plugin(physics::PhysicsPlugin)
         .add_plugin(player::PlayerPlugin)

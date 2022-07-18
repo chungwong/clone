@@ -1,3 +1,5 @@
+mod menu;
+
 use bevy::prelude::*;
 
 use bevy_egui::EguiPlugin;
@@ -23,6 +25,7 @@ pub struct UiPlugin;
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(EguiPlugin)
+            .add_plugin(menu::MenuPlugin)
             .add_system_set(
                 ConditionSet::new()
                     .run_in_state(GameState::InGame)
