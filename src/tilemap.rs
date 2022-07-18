@@ -8,7 +8,7 @@ pub use bevy_ecs_ldtk::{prelude::*, utils::ldtk_pixel_coords_to_translation_pivo
 use crate::{
     physics::{Collider, RigidBody},
     player::PlayerBundle,
-    state::{AppLooplessStateExt, ConditionSet, GameState},
+    state::{AppLooplessStateExt, ConditionSet, GameState, NextState},
 };
 
 pub(crate) mod check_point;
@@ -31,11 +31,17 @@ impl Plugin for TilemapPlugin {
                 set_clear_color: SetClearColor::FromLevelBackground,
                 ..Default::default()
             })
-            .add_enter_system(GameState::InGame, setup)
+            .add_enter_system(GameState::LoadingLevel, setup)
             .add_system_set(
                 ConditionSet::new()
                     .run_in_state(GameState::InGame)
                     .with_system(spawn_wall_collision)
+                    .into(),
+            )
+            .add_system_set(
+                ConditionSet::new()
+                    .run_in_state(GameState::LoadingLevel)
+                    .with_system(load_level)
                     .with_system(set_boundary)
                     .into(),
             )
@@ -52,6 +58,14 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         ldtk_handle: asset_server.load("levels/reckoning.ldtk"),
         ..default()
     });
+}
+
+pub fn load_level(mut level_events: EventReader<LevelEvent>, mut cmd: Commands) {
+    for event in level_events.iter() {
+        if let LevelEvent::Transformed(_) = event {
+            cmd.insert_resource(NextState(GameState::InGame))
+        }
+    }
 }
 
 #[allow(clippy::only_used_in_recursion)]

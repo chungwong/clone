@@ -131,14 +131,20 @@ pub struct NpcPlugin;
 
 impl Plugin for NpcPlugin {
     fn build(&self, app: &mut App) {
-        app.register_ldtk_entity::<MobBundle>("Mob").add_system_set(
-            ConditionSet::new()
-                .run_in_state(GameState::InGame)
-                .with_system(setup)
-                .with_system(despawn)
-                .with_system(patrol)
-                .into(),
-        );
+        app.register_ldtk_entity::<MobBundle>("Mob")
+            .add_system_set(
+                ConditionSet::new()
+                    .run_in_state(GameState::LoadingLevel)
+                    .with_system(setup)
+                    .into(),
+            )
+            .add_system_set(
+                ConditionSet::new()
+                    .run_in_state(GameState::InGame)
+                    .with_system(despawn)
+                    .with_system(patrol)
+                    .into(),
+            );
     }
 }
 

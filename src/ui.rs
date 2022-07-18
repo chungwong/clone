@@ -11,14 +11,30 @@ use move_vis::make_slider;
 use crate::{
     physics::{set_gravity, set_jump_power_coefficient, RapierConfiguration},
     player::PlayerMovementSettings,
-    state::{ConditionSet, GameState},
+};
+
+use crate::{
+    input::{MenuAction, MenuActionState},
+    state::{ConditionSet, GameState, NextState},
 };
 
 pub struct UiPlugin;
 
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(EguiPlugin);
+        app.add_plugin(EguiPlugin)
+            .add_system_set(
+                ConditionSet::new()
+                    .run_in_state(GameState::InGame)
+                    .with_system(pause)
+                    .into(),
+            )
+            .add_system_set(
+                ConditionSet::new()
+                    .run_in_state(GameState::Paused)
+                    .with_system(resume)
+                    .into(),
+            );
 
         #[cfg(feature = "debug")]
         app.add_system_set(
@@ -93,4 +109,20 @@ fn movement_ui(
         set_gravity(&mut rapier_config, player_movement_settings);
         set_jump_power_coefficient(&rapier_config, &mut *player_movement_settings);
     });
+}
+
+/// Transition game to pause state
+fn pause(mut cmd: Commands, input: Query<&MenuActionState>) {
+    let input = input.single();
+    if input.just_pressed(MenuAction::Pause) {
+        cmd.insert_resource(NextState(GameState::Paused));
+    }
+}
+
+// Transition game out of paused state
+fn resume(mut cmd: Commands, input: Query<&MenuActionState>) {
+    let input = input.single();
+    if input.just_pressed(MenuAction::Pause) {
+        cmd.insert_resource(NextState(GameState::InGame));
+    }
 }

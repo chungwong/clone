@@ -1,6 +1,7 @@
 use bevy::{prelude::*, render::camera::Camera2d};
 
 use crate::{
+    input::MenuInputManagerBundle,
     player::Player,
     state::{ConditionSet, GameState},
     tilemap::{LdtkLevel, LevelSelection},
@@ -40,7 +41,8 @@ impl Plugin for CameraPlugin {
 }
 
 fn setup(mut cmd: Commands) {
-    cmd.spawn_bundle(UiCameraBundle::default());
+    cmd.spawn_bundle(UiCameraBundle::default())
+        .insert_bundle(MenuInputManagerBundle::default());
     cmd.spawn_bundle(OrthographicCameraBundle::new_2d());
 }
 
