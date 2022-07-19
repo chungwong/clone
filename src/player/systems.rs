@@ -6,7 +6,7 @@ use crate::{
     input::{PlayerAction, PlayerActionState},
     physics::*,
     tilemap::{check_point::LastCheckPoint, EntityInstance, LevelSelection, LevelSize},
-    weapon::spawn_projectile,
+    weapon::{spawn_projectile, WeaponCooldown},
 };
 
 use super::{DashInput, DeathEvent, Direction, Health, JumpStatus, Player, PlayerMovementSettings};
@@ -309,10 +309,14 @@ pub(crate) fn boundary(
     }
 }
 
-pub(crate) fn attack(mut cmd: Commands, players: Query<(&Transform, &PlayerActionState, &Player)>) {
-    for (transform, action_state, player) in players.iter() {
-        if action_state.just_pressed(PlayerAction::Attack) {
+pub(crate) fn attack(
+    mut cmd: Commands,
+    mut players: Query<(&Transform, &PlayerActionState, &Player, &mut WeaponCooldown)>,
+) {
+    for (transform, action_state, player, mut cooldown) in players.iter_mut() {
+        if action_state.pressed(PlayerAction::Attack) && cooldown.finished() {
             spawn_projectile(&mut cmd, &transform.translation, player);
+            cooldown.reset();
         }
     }
 }

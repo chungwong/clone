@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::Duration};
 
 use crate::{
     camera::Offscreen,
@@ -6,6 +6,27 @@ use crate::{
     player::{Health, Player},
     state::{ConditionSet, GameState},
 };
+
+#[derive(Clone, Component, Debug, Deref, DerefMut, Reflect)]
+#[reflect(Component)]
+pub(crate) struct WeaponCooldown(pub(crate) Timer);
+
+impl WeaponCooldown {
+    fn new() -> Self {
+        let duration = Duration::from_secs_f32(0.2);
+
+        let mut timer = Timer::new(duration, false);
+        timer.tick(duration);
+
+        Self(timer)
+    }
+}
+
+impl Default for WeaponCooldown {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 #[derive(Component, Default)]
 pub(crate) struct Projectile {
@@ -32,8 +53,24 @@ impl Plugin for WeaponPlugin {
             ConditionSet::new()
                 .run_in_state(GameState::InGame)
                 .with_system(despawn_projectiles)
+                .with_system(add_weapon)
+                .with_system(weapon_cooldown)
                 .into(),
         );
+    }
+}
+
+fn add_weapon(mut cmd: Commands, players: Query<Entity, (Added<Player>, Without<WeaponCooldown>)>) {
+    for entity in players.iter() {
+        cmd.entity(entity).insert(WeaponCooldown::default());
+    }
+}
+
+fn weapon_cooldown(time: Res<Time>, mut timers: Query<&mut WeaponCooldown>) {
+    for mut timer in timers.iter_mut() {
+        if !timer.finished() {
+            timer.tick(time.delta());
+        }
     }
 }
 
