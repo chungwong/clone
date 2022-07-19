@@ -13,20 +13,20 @@ use crate::{
 };
 
 #[derive(Clone, Component, Default)]
-pub struct Enemy;
+pub(crate) struct Enemy;
 
 #[derive(Bundle, Clone, Default, LdtkEntity)]
-pub struct MobPhysicsBundle {
-    pub collider: Collider,
-    pub collider_mass_properties: ColliderMassProperties,
-    pub damping: Damping,
-    pub external_impulse: ExternalImpulse,
-    pub external_force: ExternalForce,
-    pub gravity_scale: GravityScale,
-    pub locked_axes: LockedAxes,
-    pub rigid_body: RigidBody,
-    pub velocity: Velocity,
-    pub ccd: Ccd,
+pub(crate) struct MobPhysicsBundle {
+    pub(crate) collider: Collider,
+    pub(crate) collider_mass_properties: ColliderMassProperties,
+    pub(crate) damping: Damping,
+    pub(crate) external_impulse: ExternalImpulse,
+    pub(crate) external_force: ExternalForce,
+    pub(crate) gravity_scale: GravityScale,
+    pub(crate) locked_axes: LockedAxes,
+    pub(crate) rigid_body: RigidBody,
+    pub(crate) velocity: Velocity,
+    pub(crate) ccd: Ccd,
 }
 
 impl From<EntityInstance> for MobPhysicsBundle {
@@ -68,14 +68,14 @@ pub(crate) struct MobBundle {
     pub(crate) hp: Health,
 
     #[ldtk_entity]
-    pub patrol: Patrol,
+    pub(crate) patrol: Patrol,
 }
 
 #[derive(Clone, PartialEq, Debug, Default, Component)]
-pub struct Patrol {
-    pub points: Vec<Vec2>,
-    pub index: usize,
-    pub forward: bool,
+pub(crate) struct Patrol {
+    pub(crate) points: Vec<Vec2>,
+    pub(crate) index: usize,
+    pub(crate) forward: bool,
 }
 
 impl LdtkEntity for Patrol {
@@ -162,7 +162,7 @@ fn despawn(mut cmd: Commands, enemies: Query<(Entity, &Health), (With<Enemy>, Ch
     }
 }
 
-pub fn patrol(mut query: Query<(&mut Transform, &mut Velocity, &mut Patrol)>) {
+fn patrol(mut query: Query<(&mut Transform, &mut Velocity, &mut Patrol)>) {
     for (mut transform, mut velocity, mut patrol) in query.iter_mut() {
         if patrol.points.len() <= 1 {
             continue;

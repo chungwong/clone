@@ -15,7 +15,7 @@ pub(crate) mod check_point;
 use crate::tilemap::check_point::CheckPointPlugin;
 
 #[derive(Debug, Default)]
-pub struct LevelSize(pub Option<Vec2>);
+pub(crate) struct LevelSize(pub Option<Vec2>);
 
 pub struct TilemapPlugin;
 
@@ -60,7 +60,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
 }
 
-pub fn load_level(mut level_events: EventReader<LevelEvent>, mut cmd: Commands) {
+fn load_level(mut level_events: EventReader<LevelEvent>, mut cmd: Commands) {
     for event in level_events.iter() {
         if let LevelEvent::Transformed(_) = event {
             cmd.insert_resource(NextState(GameState::InGame))
@@ -90,10 +90,10 @@ fn set_boundary(
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Component)]
-pub struct Wall;
+pub(crate) struct Wall;
 
 #[derive(Clone, Debug, Default, Bundle, LdtkIntCell)]
-pub struct WallBundle {
+pub(crate) struct WallBundle {
     wall: Wall,
 }
 
@@ -197,7 +197,7 @@ pub(crate) fn merge_grids(
 /// 2. combine wall tiles into flat "plates" in each individual row
 /// 3. combine the plates into rectangles across multiple rows wherever possible
 /// 4. spawn colliders for each rectangle
-pub fn spawn_wall_collision(
+pub(crate) fn spawn_wall_collision(
     mut commands: Commands,
     walls: Query<(&GridCoords, &Parent), Added<Wall>>,
     parent_query: Query<&Parent, Without<Wall>>,

@@ -88,11 +88,11 @@ fn movement_ui(
             &mut player_movement_settings.coyote_time_ms,
             10..=200,
         ));
-        ui.add(make_slider(
-            "Slide Factor",
-            &mut player_movement_settings.slide_factor,
-            0.0..=-1000.0,
-        ));
+        // ui.add(make_slider(
+        //     "Slide Factor",
+        //     &mut player_movement_settings.slide_factor,
+        //     0.0..=-1000.0,
+        // ));
         ui.add(make_slider(
             "Fall Factor",
             &mut player_movement_settings.fall_factor,

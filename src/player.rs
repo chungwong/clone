@@ -114,21 +114,21 @@ impl Default for DashInput {
 }
 
 #[derive(Default)]
-pub struct PlayerMovementSettings {
+pub(crate) struct PlayerMovementSettings {
     // metre
-    pub jump_height: f32,
+    pub(crate) jump_height: f32,
     // second
-    pub time_to_apex: f32,
-    pub run_speed: f32,
-    pub dash_speed: f32,
-    // pub jump_impulse: f32,
-    pub jump_power_coefficient: f32,
-    pub coyote_time_ms: u64,
-    // pub jump_power_coefficient: f32,
-    pub slide_factor: f32,
-    pub fall_factor: f32,
-    pub jump_break_factor: f32,
-    pub gravity_scale: f32,
+    pub(crate) time_to_apex: f32,
+    pub(crate) run_speed: f32,
+    pub(crate) dash_speed: f32,
+    // pub(crate) jump_impulse: f32,
+    pub(crate) jump_power_coefficient: f32,
+    pub(crate) coyote_time_ms: u64,
+    // pub(crate) jump_power_coefficient: f32,
+    // pub(crate) slide_factor: f32,
+    pub(crate) fall_factor: f32,
+    pub(crate) jump_break_factor: f32,
+    pub(crate) gravity_scale: f32,
 }
 
 #[derive(Clone, Debug)]
@@ -169,17 +169,17 @@ impl Default for Player {
 }
 
 #[derive(Bundle, Clone, Default, LdtkIntCell)]
-pub struct PlayerPhysicsBundle {
-    pub collider: Collider,
-    pub collider_mass_properties: ColliderMassProperties,
-    pub damping: Damping,
-    pub external_impulse: ExternalImpulse,
-    pub external_force: ExternalForce,
-    pub gravity_scale: GravityScale,
-    pub locked_axes: LockedAxes,
-    pub rigid_body: RigidBody,
-    pub velocity: Velocity,
-    pub ccd: Ccd,
+pub(crate) struct PlayerPhysicsBundle {
+    pub(crate) collider: Collider,
+    pub(crate) collider_mass_properties: ColliderMassProperties,
+    pub(crate) damping: Damping,
+    pub(crate) external_impulse: ExternalImpulse,
+    pub(crate) external_force: ExternalForce,
+    pub(crate) gravity_scale: GravityScale,
+    pub(crate) locked_axes: LockedAxes,
+    pub(crate) rigid_body: RigidBody,
+    pub(crate) velocity: Velocity,
+    pub(crate) ccd: Ccd,
 }
 
 impl From<EntityInstance> for PlayerPhysicsBundle {
@@ -209,31 +209,31 @@ impl From<EntityInstance> for PlayerPhysicsBundle {
 pub(crate) struct PlayerBundle {
     #[sprite_bundle("player.png")]
     #[bundle]
-    pub sprite_bundle: SpriteBundle,
+    pub(crate) sprite_bundle: SpriteBundle,
 
     #[bundle]
     input_manager: PlayerInputManagerBundle,
 
     #[from_entity_instance]
     #[bundle]
-    pub player_physics_bundle: PlayerPhysicsBundle,
+    pub(crate) player_physics_bundle: PlayerPhysicsBundle,
 
-    pub track_movement: TrackMovement,
+    pub(crate) track_movement: TrackMovement,
 
     pub(crate) player: Player,
 
     #[from_entity_instance]
-    entity_instance: EntityInstance,
+    pub(crate) entity_instance: EntityInstance,
 
     #[worldly]
-    pub worldly: Worldly,
+    pub(crate) worldly: Worldly,
 
     #[from_entity_instance]
     pub(crate) hp: Health,
 }
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq, SystemLabel)]
-pub enum Label {
+pub(crate) enum Label {
     CheckStanding,
     DeathSystems,
     Movement,
@@ -252,7 +252,7 @@ impl Plugin for PlayerPlugin {
                 // jump_impulse: 20000.0,
                 jump_power_coefficient: 20000.0,
                 coyote_time_ms: 100,
-                slide_factor: 60.0,
+                // slide_factor: 60.0,
                 fall_factor: 100.0,
                 jump_break_factor: 200.0,
                 gravity_scale: DEFAULT_GRAVITY_SCALE,

@@ -9,9 +9,9 @@ use crate::{
 
 // pub const SCALE: f32 = 100.0;
 // pub const SCALE: f32 = 10.0;
-pub const SCALE: f32 = 1.0;
+pub(crate) const SCALE: f32 = 1.0;
 
-pub struct PhysicsPlugin;
+pub(crate) struct PhysicsPlugin;
 
 impl Plugin for PhysicsPlugin {
     fn build(&self, app: &mut App) {
@@ -27,7 +27,7 @@ impl Plugin for PhysicsPlugin {
     }
 }
 
-pub fn pause_physics_during_load(
+fn pause_physics_during_load(
     mut level_events: EventReader<LevelEvent>,
     mut rapier_config: ResMut<RapierConfiguration>,
 ) {
@@ -49,7 +49,7 @@ fn setup(
 }
 
 /// what is the gravity that would allow jumping to a given height?
-pub fn set_gravity(
+pub(crate) fn set_gravity(
     rapier_config: &mut ResMut<RapierConfiguration>,
     player_movement_settings: &PlayerMovementSettings,
 ) {
@@ -61,7 +61,7 @@ pub fn set_gravity(
 /// 50 is a multiplier.  Say the expected value of jump_power_coefficient is 20,000 and
 /// (2.0 * rapier_config.gravity.y.abs() * JUMP_HEIGHT).sqrt() gives 400.0
 /// It is necessary to multiply 50.0 to reach to 20,000
-pub fn set_jump_power_coefficient(
+pub(crate) fn set_jump_power_coefficient(
     rapier_config: &ResMut<RapierConfiguration>,
     player_movement_settings: &mut PlayerMovementSettings,
 ) {
