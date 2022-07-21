@@ -25,6 +25,7 @@ pub(crate) struct MobPhysicsBundle {
     pub(crate) gravity_scale: GravityScale,
     pub(crate) locked_axes: LockedAxes,
     pub(crate) rigid_body: RigidBody,
+    pub(crate) sensor: Sensor,
     pub(crate) velocity: Velocity,
     pub(crate) ccd: Ccd,
 }
@@ -46,6 +47,7 @@ impl From<EntityInstance> for MobPhysicsBundle {
             gravity_scale: GravityScale(1.0),
             locked_axes: LockedAxes::ROTATION_LOCKED,
             rigid_body: RigidBody::Dynamic,
+            sensor: Sensor,
             velocity: Velocity::zero(),
             ccd: Ccd::enabled(),
         }
@@ -170,6 +172,7 @@ fn patrol(mut query: Query<(&mut Transform, &mut Velocity, &mut Patrol)>) {
 
         let mut new_velocity =
             (patrol.points[patrol.index] - transform.translation.truncate()).normalize() * 75.0;
+
 
         if new_velocity.dot(velocity.linvel) < 0. {
             if patrol.index == 0 {
