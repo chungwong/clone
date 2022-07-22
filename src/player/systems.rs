@@ -257,10 +257,12 @@ pub(crate) fn jump(
                 player.rising = false;
 
                 // wall slide
-                // velocity.linvel.y += rapier_config.gravity.y * player_movement_settings.slide_factor * time.delta_seconds();
+                velocity.linvel.y += rapier_config.gravity.y
+                    * player_movement_settings.slide_factor
+                    * time.delta_seconds();
 
                 // wall grab
-                velocity.linvel.y = 0.0;
+                // velocity.linvel.y = 0.0;
             }
         }
 
