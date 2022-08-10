@@ -29,7 +29,7 @@ impl Plugin for TilemapPlugin {
                     load_level_neighbors: true,
                 },
                 set_clear_color: SetClearColor::FromLevelBackground,
-                ..Default::default()
+                ..default()
             })
             .add_enter_system(GameState::LoadingLevel, setup)
             .add_system_set(
@@ -108,7 +108,7 @@ struct Plate {
 pub(crate) fn merge_grids(
     layer: &LayerInstance,
     grid_coords: &HashSet<GridCoords>,
-) -> Vec<Rect<i32>> {
+) -> Vec<UiRect<i32>> {
     let LayerInstance {
         c_wid: width,
         c_hei: height,
@@ -142,20 +142,20 @@ pub(crate) fn merge_grids(
     }
 
     // combine "plates" into rectangles across multiple rows
-    let mut rects: Vec<Rect<i32>> = Vec::new();
-    let mut previous_rects: HashMap<Plate, Rect<i32>> = HashMap::new();
+    let mut rects: Vec<UiRect<i32>> = Vec::new();
+    let mut previous_rects: HashMap<Plate, UiRect<i32>> = HashMap::new();
 
     // an extra empty row so the algorithm "terminates" the rects that touch the top
     // edge
     plate_stack.push(Vec::new());
 
     for (y, row) in plate_stack.iter().enumerate() {
-        let mut current_rects: HashMap<Plate, Rect<i32>> = HashMap::new();
+        let mut current_rects: HashMap<Plate, UiRect<i32>> = HashMap::new();
         for plate in row {
             if let Some(previous_rect) = previous_rects.remove(plate) {
                 current_rects.insert(
                     *plate,
-                    Rect {
+                    UiRect {
                         top: previous_rect.top + 1,
                         ..previous_rect
                     },
@@ -163,7 +163,7 @@ pub(crate) fn merge_grids(
             } else {
                 current_rects.insert(
                     *plate,
-                    Rect {
+                    UiRect {
                         bottom: y as i32,
                         top: y as i32,
                         left: plate.left,
@@ -209,12 +209,12 @@ pub(crate) fn spawn_wall_collision(
         // storing them as GridCoords in a HashSet for quick, easy lookup
         let mut wall_grid_coords: HashMap<Entity, HashSet<GridCoords>> = HashMap::new();
 
-        walls.for_each(|(&grid_coords, &Parent(parent))| {
+        walls.for_each(|(&grid_coords, parent)| {
             // the intgrid tiles' direct parents will be bevy_ecs_tilemap chunks, not the level
             // To get the level, you need their grandparents, which is where parent_query comes in
-            if let Ok(&Parent(level_entity)) = parent_query.get(parent) {
+            if let Ok(level_entity) = parent_query.get(parent.get()) {
                 wall_grid_coords
-                    .entry(level_entity)
+                    .entry(level_entity.get())
                     .or_insert_with(HashSet::new)
                     .insert(grid_coords);
             }
@@ -239,7 +239,7 @@ pub(crate) fn spawn_wall_collision(
 
                 // spawn colliders for every rectangle
                 for merged_grid in merge_grids(&layer, wall_grid_coords) {
-                    commands
+                    let child_entity = commands
                         .spawn()
                         .insert(Name::new("Wall"))
                         .insert(Collider::cuboid(
@@ -251,21 +251,19 @@ pub(crate) fn spawn_wall_collision(
                                 / 2.,
                         ))
                         .insert(RigidBody::Fixed)
-                        // There could be a bug in bevy_rapier, adding Transform
-                        // will break the position of colliders
-                        //
-                        //.insert_bundle(TransformBundle::from(Transform::from_xyz(
-                        .insert(GlobalTransform::from_xyz(
+                        .insert_bundle(TransformBundle::from(Transform::from_xyz(
                             (merged_grid.left + merged_grid.right + 1) as f32 * grid_size as f32
                                 / 2.,
                             (merged_grid.bottom + merged_grid.top + 1) as f32 * grid_size as f32
                                 / 2.,
                             0.,
-                        ))
-                        // Making the collider a child of the level serves two purposes:
-                        // 1. Adjusts the transforms to be relative to the level for free
-                        // 2. the colliders will be despawned automatically when levels unload
-                        .insert(Parent(level_entity));
+                        )))
+                        .id();
+
+                    // Making the collider a child of the level serves two purposes:
+                    // 1. Adjusts the transforms to be relative to the level for free
+                    // 2. the colliders will be despawned automatically when levels unload
+                    commands.entity(level_entity).add_child(child_entity);
                 }
             }
         });

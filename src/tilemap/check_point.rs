@@ -98,7 +98,7 @@ fn save_last_check_point(
                     &mut cmd,
                     player_entity,
                     last_check_point.as_deref_mut(),
-                    transform.translation,
+                    transform.translation(),
                     level_selection.clone(),
                 );
             }
@@ -116,10 +116,10 @@ pub(crate) fn spawn_check_points(
     if !check_points.is_empty() {
         let mut check_point_grid_coords: HashMap<Entity, HashSet<GridCoords>> = HashMap::new();
 
-        check_points.for_each(|(&grid_coords, &Parent(parent))| {
-            if let Ok(&Parent(level_entity)) = parent_query.get(parent) {
+        check_points.for_each(|(&grid_coords, parent)| {
+            if let Ok(level_parent) = parent_query.get(parent.get()) {
                 check_point_grid_coords
-                    .entry(level_entity)
+                    .entry(level_parent.get())
                     .or_insert_with(HashSet::new)
                     .insert(grid_coords);
             }
@@ -144,7 +144,7 @@ pub(crate) fn spawn_check_points(
 
                 // spawn colliders for every rectangle
                 for merged_grid in merge_grids(&layer, check_point_grid_coords) {
-                    commands
+                    let child_entity = commands
                         .spawn()
                         .insert(Name::new("CheckPoint"))
                         .insert(CheckPoint)
@@ -162,18 +162,15 @@ pub(crate) fn spawn_check_points(
                         ))
                         .insert(GravityScale(0.0))
                         .insert(RigidBody::Fixed)
-                        // There could be a bug in bevy_rapier, adding Transform
-                        // will break the position of colliders
-                        //
-                        // .insert_bundle(TransformBundle::from(Transform::from_xyz(
-                        .insert(GlobalTransform::from_xyz(
+                        .insert_bundle(TransformBundle::from(Transform::from_xyz(
                             (merged_grid.left + merged_grid.right + 1) as f32 * grid_size as f32
                                 / 2.,
                             (merged_grid.bottom + merged_grid.top + 1) as f32 * grid_size as f32
                                 / 2.,
                             0.,
-                        ))
-                        .insert(Parent(level_entity));
+                        )))
+                        .id();
+                    commands.entity(level_entity).add_child(child_entity);
                 }
             }
         });

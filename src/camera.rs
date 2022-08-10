@@ -1,4 +1,4 @@
-use bevy::{prelude::*, render::camera::Camera2d};
+use bevy::prelude::*;
 
 use crate::{
     input::MenuInputManagerBundle,
@@ -41,9 +41,8 @@ impl Plugin for CameraPlugin {
 }
 
 fn setup(mut cmd: Commands) {
-    cmd.spawn_bundle(UiCameraBundle::default())
+    cmd.spawn_bundle(Camera2dBundle::default())
         .insert_bundle(MenuInputManagerBundle::default());
-    cmd.spawn_bundle(OrthographicCameraBundle::new_2d());
 }
 
 fn fit_camera_to_level(
@@ -110,16 +109,13 @@ fn fit_camera_to_level(
 
 pub(crate) fn despawn_offscreens(
     mut cmd: Commands,
-    cameras: Query<(&Camera, &GlobalTransform), With<bevy::render::camera::Camera2d>>,
-    images: Res<Assets<Image>>,
+    cameras: Query<(&Camera, &GlobalTransform), With<Camera2d>>,
     offscreens: Query<(Entity, &Offscreen, &Transform)>,
     windows: Res<Windows>,
 ) {
     for (entity, offscreen, transform) in offscreens.iter() {
         for (camera, global_transform) in cameras.iter() {
-            if let Some(pos) =
-                camera.world_to_screen(&windows, &images, global_transform, transform.translation)
-            {
+            if let Some(pos) = camera.world_to_viewport(global_transform, transform.translation) {
                 if let Some(window) = windows.get_primary() {
                     if pos.x >= window.physical_width() as f32 + offscreen.offset {
                         cmd.entity(entity).despawn_recursive();

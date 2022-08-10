@@ -1,4 +1,4 @@
-use bevy::{app::AppExit, input::system::exit_on_esc_system, prelude::*};
+use bevy::{app::AppExit, prelude::*, window::close_on_esc};
 
 use crate::state::*;
 
@@ -31,7 +31,7 @@ impl Plugin for MenuPlugin {
             .add_system_set(
                 ConditionSet::new()
                     .run_in_state(GameState::MainMenu)
-                    .with_system(exit_on_esc_system)
+                    .with_system(close_on_esc)
                     .with_system(button_interact_visual)
                     .with_system(button_exit.run_if(on_button_interact::<QuitButton>))
                     .with_system(button_game.run_if(on_button_interact::<EnterButton>))
@@ -56,7 +56,7 @@ fn setup_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     let button_style = Style {
         size: Size::new(Val::Px(250.0), Val::Px(65.0)),
-        margin: Rect::all(Val::Px(20.0)),
+        margin: UiRect::all(Val::Px(20.0)),
         justify_content: JustifyContent::Center,
         align_items: AlignItems::Center,
         ..default()
@@ -70,7 +70,7 @@ fn setup_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn_bundle(NodeBundle {
             style: Style {
-                margin: Rect::all(Val::Auto),
+                margin: UiRect::all(Val::Auto),
                 flex_direction: FlexDirection::ColumnReverse,
                 align_items: AlignItems::Center,
                 ..default()
@@ -83,17 +83,16 @@ fn setup_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
             // Display the game name
             parent.spawn_bundle(TextBundle {
                 style: Style {
-                    margin: Rect::all(Val::Px(50.0)),
+                    margin: UiRect::all(Val::Px(50.0)),
                     ..default()
                 },
-                text: Text::with_section(
+                text: Text::from_section(
                     "Reckoning",
                     TextStyle {
                         font: font.clone(),
                         font_size: 80.0,
                         color: TEXT_COLOR,
                     },
-                    Default::default(),
                 ),
                 ..default()
             });
@@ -110,11 +109,7 @@ fn setup_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                 .insert(EnterButton)
                 .with_children(|parent| {
                     parent.spawn_bundle(TextBundle {
-                        text: Text::with_section(
-                            "New Game",
-                            button_text_style.clone(),
-                            Default::default(),
-                        ),
+                        text: Text::from_section("New Game", button_text_style.clone()),
                         ..default()
                     });
                 });
@@ -127,7 +122,7 @@ fn setup_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                 .insert(QuitButton)
                 .with_children(|parent| {
                     parent.spawn_bundle(TextBundle {
-                        text: Text::with_section("Quit", button_text_style, Default::default()),
+                        text: Text::from_section("Quit", button_text_style),
                         ..default()
                     });
                 });
@@ -182,7 +177,7 @@ fn pause_menu(mut cmd: Commands, asset_server: Res<AssetServer>) {
 
     let button_style = Style {
         size: Size::new(Val::Px(250.0), Val::Px(65.0)),
-        margin: Rect::all(Val::Px(20.0)),
+        margin: UiRect::all(Val::Px(20.0)),
         justify_content: JustifyContent::Center,
         align_items: AlignItems::Center,
         ..default()
@@ -195,7 +190,7 @@ fn pause_menu(mut cmd: Commands, asset_server: Res<AssetServer>) {
 
     cmd.spawn_bundle(NodeBundle {
         style: Style {
-            margin: Rect::all(Val::Auto),
+            margin: UiRect::all(Val::Auto),
             flex_direction: FlexDirection::ColumnReverse,
             align_items: AlignItems::Center,
             ..default()
@@ -214,11 +209,7 @@ fn pause_menu(mut cmd: Commands, asset_server: Res<AssetServer>) {
             .insert(ResumeButton)
             .with_children(|parent| {
                 parent.spawn_bundle(TextBundle {
-                    text: Text::with_section(
-                        "Resume",
-                        button_text_style.clone(),
-                        Default::default(),
-                    ),
+                    text: Text::from_section("Resume", button_text_style.clone()),
                     ..default()
                 });
             });
@@ -231,7 +222,7 @@ fn pause_menu(mut cmd: Commands, asset_server: Res<AssetServer>) {
             .insert(QuitButton)
             .with_children(|parent| {
                 parent.spawn_bundle(TextBundle {
-                    text: Text::with_section("Quit", button_text_style, Default::default()),
+                    text: Text::from_section("Quit", button_text_style),
                     ..default()
                 });
             });

@@ -32,7 +32,7 @@ fn splash_setup(mut cmd: Commands, asset_server: Res<AssetServer>) {
     };
 
     cmd.spawn_bundle(Text2dBundle {
-        text: Text::with_section("Splash Screen", text_style, text_alignment),
+        text: Text::from_section("Splash Screen", text_style).with_alignment(text_alignment),
         ..default()
     })
     .insert(OnSplashScreen);

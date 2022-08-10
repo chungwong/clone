@@ -105,30 +105,27 @@ pub(crate) fn spawn_projectile(cmd: &mut Commands, translation: &Vec3, player: &
     let dir = player.facing_direction.to_f32();
     let offset = Vec3::new(10.0 * dir, 0.0, 0.0);
 
-    cmd.spawn_bundle(SpriteBundle {
-        transform: Transform {
-            translation: *translation + offset,
-            scale: Vec3::new(2.0, 2.0, 0.0),
+    cmd.spawn()
+        .insert_bundle(SpriteBundle {
+            transform: Transform::from_translation(*translation + offset),
             ..default()
-        },
-        ..default()
-    })
-    .insert(RigidBody::KinematicVelocityBased)
-    .insert(Sensor)
-    .insert(Collider::ball(1.0))
-    .insert(Velocity {
-        linvel: Vec2::new(300.0 * dir, 0.0),
-        ..default()
-    })
-    .insert(GravityScale(0.0))
-    .insert(Ccd::enabled())
-    .insert(ActiveEvents::COLLISION_EVENTS)
-    .insert(
-        ActiveCollisionTypes::DYNAMIC_KINEMATIC
-            | ActiveCollisionTypes::KINEMATIC_KINEMATIC
-            | ActiveCollisionTypes::KINEMATIC_STATIC,
-    )
-    .insert(CollidingEntities::default())
-    .insert(Offscreen::default())
-    .insert(Projectile::new(1, None, translation.truncate()));
+        })
+        .insert(RigidBody::KinematicVelocityBased)
+        .insert(Sensor)
+        .insert(Collider::ball(1.0))
+        .insert(Velocity {
+            linvel: Vec2::new(300.0 * dir, 0.0),
+            ..default()
+        })
+        .insert(GravityScale(0.0))
+        .insert(Ccd::enabled())
+        .insert(ActiveEvents::COLLISION_EVENTS)
+        .insert(
+            ActiveCollisionTypes::DYNAMIC_KINEMATIC
+                | ActiveCollisionTypes::KINEMATIC_KINEMATIC
+                | ActiveCollisionTypes::KINEMATIC_STATIC,
+        )
+        .insert(CollidingEntities::default())
+        .insert(Offscreen::default())
+        .insert(Projectile::new(1, None, translation.truncate()));
 }
