@@ -12,7 +12,7 @@ use crate::{
 };
 
 pub(crate) mod check_point;
-use crate::tilemap::check_point::CheckPointPlugin;
+use check_point::CheckPointPlugin;
 
 #[derive(Debug, Default)]
 pub(crate) struct LevelSize(pub Option<Vec2>);

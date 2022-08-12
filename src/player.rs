@@ -14,7 +14,7 @@ use crate::{
     tilemap::{EntityInstance, FieldValue, LdtkEntity, LdtkIntCell, Worldly},
 };
 
-mod systems;
+pub(crate) mod systems;
 
 // how many pixels
 // with damping applied, values are not accurate anymore
