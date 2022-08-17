@@ -1,4 +1,6 @@
+#![feature(trait_alias)]
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
+mod audio;
 mod camera;
 mod input;
 mod npc;
@@ -16,7 +18,9 @@ pub fn run() {
     let mut app = App::new();
 
     app.add_plugins(DefaultPlugins)
+        //state should be loaded first as there are a lot of plugins depend on `GameState`
         .add_plugin(state::StatePlugin)
+        .add_plugin(audio::AudioPlugin)
         .add_plugin(camera::CameraPlugin)
         .add_plugin(tilemap::TilemapPlugin)
         .add_plugin(input::InputPlugin)
