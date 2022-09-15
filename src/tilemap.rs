@@ -7,7 +7,6 @@ pub use bevy_ecs_ldtk::{prelude::*, utils::ldtk_pixel_coords_to_translation_pivo
 
 use crate::{
     physics::{Collider, RigidBody},
-    player::PlayerBundle,
     state::{AppLooplessStateExt, ConditionSet, GameState, NextState},
 };
 
@@ -46,8 +45,7 @@ impl Plugin for TilemapPlugin {
                     .into(),
             )
             .add_plugin(CheckPointPlugin)
-            .register_ldtk_int_cell_for_layer::<WallBundle>("Collisions", 1)
-            .register_ldtk_entity::<PlayerBundle>("Player");
+            .register_ldtk_int_cell_for_layer::<WallBundle>("Collisions", 1);
     }
 }
 

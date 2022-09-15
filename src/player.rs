@@ -11,7 +11,7 @@ use crate::{
     input::PlayerInputManagerBundle,
     physics::*,
     state::{ConditionSet, GameState},
-    tilemap::{EntityInstance, FieldValue, LdtkEntity, LdtkIntCell, Worldly},
+    tilemap::{EntityInstance, FieldValue, Worldly},
 };
 
 pub(crate) mod systems;
@@ -35,7 +35,7 @@ pub(crate) struct Health {
 }
 
 impl Health {
-    pub fn new(hp: u32) -> Self {
+    pub(crate) fn new(hp: u32) -> Self {
         Self {
             current: hp,
             max: hp,
@@ -43,8 +43,8 @@ impl Health {
     }
 }
 
-impl From<EntityInstance> for Health {
-    fn from(entity_instance: EntityInstance) -> Self {
+impl From<&EntityInstance> for Health {
+    fn from(entity_instance: &EntityInstance) -> Self {
         let field_instances = entity_instance
             .field_instances
             .iter()
@@ -58,6 +58,12 @@ impl From<EntityInstance> for Health {
             }
             _ => panic!("{}", &format!("Wrong HP type {:?}", field_instances)),
         }
+    }
+}
+
+impl From<EntityInstance> for Health {
+    fn from(entity_instance: EntityInstance) -> Self {
+        Self::from(&entity_instance)
     }
 }
 
@@ -168,7 +174,7 @@ impl Default for Player {
     }
 }
 
-#[derive(Bundle, Clone, Default, LdtkIntCell)]
+#[derive(Bundle, Clone, Default)]
 pub(crate) struct PlayerPhysicsBundle {
     pub(crate) collider: Collider,
     pub(crate) collider_mass_properties: ColliderMassProperties,
@@ -182,39 +188,14 @@ pub(crate) struct PlayerPhysicsBundle {
     pub(crate) ccd: Ccd,
 }
 
-impl From<EntityInstance> for PlayerPhysicsBundle {
-    fn from(entity_instance: EntityInstance) -> PlayerPhysicsBundle {
-        Self {
-            collider: Collider::cuboid(
-                entity_instance.width as f32 / 2.0,
-                entity_instance.height as f32 / 2.0,
-            ),
-            collider_mass_properties: ColliderMassProperties::Density(1.0),
-            damping: Damping {
-                linear_damping: 10.0,
-                ..default()
-            },
-            external_impulse: ExternalImpulse::default(),
-            external_force: ExternalForce::default(),
-            gravity_scale: GravityScale(1.0),
-            locked_axes: LockedAxes::ROTATION_LOCKED,
-            rigid_body: RigidBody::Dynamic,
-            velocity: Velocity::zero(),
-            ccd: Ccd::enabled(),
-        }
-    }
-}
-
-#[derive(Clone, Bundle, LdtkEntity)]
+#[derive(Clone, Bundle, Default)]
 pub(crate) struct PlayerBundle {
-    #[sprite_bundle("player.png")]
     #[bundle]
     pub(crate) sprite_bundle: SpriteBundle,
 
     #[bundle]
     input_manager: PlayerInputManagerBundle,
 
-    #[from_entity_instance]
     #[bundle]
     pub(crate) player_physics_bundle: PlayerPhysicsBundle,
 
@@ -222,18 +203,16 @@ pub(crate) struct PlayerBundle {
 
     pub(crate) player: Player,
 
-    #[from_entity_instance]
     pub(crate) entity_instance: EntityInstance,
 
-    #[worldly]
     pub(crate) worldly: Worldly,
 
-    #[from_entity_instance]
     pub(crate) hp: Health,
 }
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq, SystemLabel)]
 pub(crate) enum Label {
+    Initial,
     CheckStanding,
     DeathSystems,
     Movement,
@@ -261,7 +240,15 @@ impl Plugin for PlayerPlugin {
             .add_system_set(
                 ConditionSet::new()
                     .run_in_state(GameState::InGame)
+                    .label(Label::Initial)
+                    .with_system(systems::spawn_player)
+                    .into(),
+            )
+            .add_system_set(
+                ConditionSet::new()
+                    .run_in_state(GameState::InGame)
                     .label(Label::CheckStanding)
+                    .after(Label::Initial)
                     .with_system(systems::check_standing)
                     .with_system(systems::set_facing_direction)
                     .into(),

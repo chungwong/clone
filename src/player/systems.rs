@@ -9,7 +9,10 @@ use crate::{
     weapon::{spawn_projectile, WeaponCooldown},
 };
 
-use super::{DashInput, DeathEvent, Direction, Health, JumpStatus, Player, PlayerMovementSettings};
+use super::{
+    DashInput, DeathEvent, Direction, Health, JumpStatus, Player, PlayerBundle,
+    PlayerMovementSettings, PlayerPhysicsBundle,
+};
 
 pub(crate) fn check_standing(
     time: Res<Time>,
@@ -359,6 +362,44 @@ pub(crate) fn process_death_event(
                 }
                 _ => (),
             }
+        }
+    }
+}
+
+pub(crate) fn spawn_player(
+    mut cmd: Commands,
+    entity_query: Query<(Entity, &Transform, &EntityInstance), Added<EntityInstance>>,
+    asset_server: Res<AssetServer>,
+) {
+    for (entity, transform, entity_instance) in entity_query.iter() {
+        if entity_instance.identifier == *"Player" {
+            cmd.entity(entity).insert_bundle(PlayerBundle {
+                sprite_bundle: SpriteBundle {
+                    texture: asset_server.load("player.png"),
+                    transform: *transform,
+                    ..default()
+                },
+                player_physics_bundle: PlayerPhysicsBundle {
+                    collider: Collider::cuboid(
+                        entity_instance.width as f32 / 2.0,
+                        entity_instance.height as f32 / 2.0,
+                    ),
+                    collider_mass_properties: ColliderMassProperties::Density(1.0),
+                    damping: Damping {
+                        linear_damping: 10.0,
+                        ..default()
+                    },
+                    gravity_scale: GravityScale(1.0),
+                    locked_axes: LockedAxes::ROTATION_LOCKED,
+                    rigid_body: RigidBody::Dynamic,
+                    velocity: Velocity::zero(),
+                    ccd: Ccd::enabled(),
+                    ..default()
+                },
+                entity_instance: entity_instance.clone(),
+                hp: entity_instance.into(),
+                ..default()
+            });
         }
     }
 }
