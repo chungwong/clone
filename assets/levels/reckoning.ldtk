@@ -10,7 +10,7 @@
 	},
 	"jsonVersion": "1.1.3",
 	"appBuildId": 458364,
-	"nextUid": 12,
+	"nextUid": 13,
 	"identifierStyle": "Capitalize",
 	"worldLayout": "Free",
 	"worldGridWidth": 256,
@@ -34,6 +34,33 @@
 	"tutorialDesc": null,
 	"flags": [],
 	"defs": { "layers": [
+		{
+			"__type": "Entities",
+			"identifier": "Mobs",
+			"type": "Entities",
+			"uid": 12,
+			"gridSize": 16,
+			"guideGridWid": 0,
+			"guideGridHei": 0,
+			"displayOpacity": 1,
+			"inactiveOpacity": 0.6,
+			"hideInList": false,
+			"hideFieldsWhenInactive": true,
+			"pxOffsetX": 0,
+			"pxOffsetY": 0,
+			"parallaxFactorX": 0,
+			"parallaxFactorY": 0,
+			"parallaxScaling": true,
+			"requiredTags": [],
+			"excludedTags": [],
+			"intGridValues": [],
+			"autoTilesetDefUid": null,
+			"autoRuleGroups": [],
+			"autoSourceLayerDefUid": null,
+			"tilesetDefUid": null,
+			"tilePivotX": 0,
+			"tilePivotY": 0
+		},
 		{
 			"__type": "IntGrid",
 			"identifier": "Check_Points",
@@ -308,6 +335,52 @@
 			"fieldInstances": [],
 			"layerInstances": [
 				{
+					"__identifier": "Mobs",
+					"__type": "Entities",
+					"__cWid": 80,
+					"__cHei": 25,
+					"__gridSize": 16,
+					"__opacity": 1,
+					"__pxTotalOffsetX": 0,
+					"__pxTotalOffsetY": 0,
+					"__tilesetDefUid": null,
+					"__tilesetRelPath": null,
+					"iid": "206b6420-2a00-11ed-9750-abac365f0f28",
+					"levelId": 0,
+					"layerDefUid": 12,
+					"pxOffsetX": 0,
+					"pxOffsetY": 0,
+					"visible": true,
+					"optionalRules": [],
+					"intGridCsv": [],
+					"autoLayerTiles": [],
+					"seed": 9179730,
+					"overrideTilesetUid": null,
+					"gridTiles": [],
+					"entityInstances": [
+						{
+							"__identifier": "Mob",
+							"__grid": [41,23],
+							"__pivot": [0,1],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#FF0000",
+							"iid": "3c8fad00-2a00-11ed-9750-f10aa61f1ad6",
+							"width": 16,
+							"height": 16,
+							"defUid": 8,
+							"px": [656,384],
+							"fieldInstances": [
+								{ "__identifier": "HP", "__value": 1, "__type": "Int", "__tile": null, "defUid": 9, "realEditorValues": [] },
+								{ "__identifier": "Patrol", "__value": [{ "cx": 32, "cy": 23 }], "__type": "Array<Point>", "__tile": null, "defUid": 10, "realEditorValues": [{
+									"id": "V_String",
+									"params": ["32,23"]
+								}] }
+							]
+						}
+					]
+				},
+				{
 					"__identifier": "Check_Points",
 					"__type": "IntGrid",
 					"__cWid": 80,
@@ -407,7 +480,7 @@
 					"layerDefUid": 3,
 					"pxOffsetX": 0,
 					"pxOffsetY": 0,
-					"visible": true,
+					"visible": false,
 					"optionalRules": [],
 					"intGridCsv": [],
 					"autoLayerTiles": [],
@@ -415,26 +488,6 @@
 					"overrideTilesetUid": null,
 					"gridTiles": [],
 					"entityInstances": [
-						{
-							"__identifier": "Mob",
-							"__grid": [41,23],
-							"__pivot": [0,1],
-							"__tags": [],
-							"__tile": null,
-							"__smartColor": "#FF0000",
-							"iid": "1bf03cd0-dbe0-11ec-b6e2-1fce10b1e932",
-							"width": 16,
-							"height": 16,
-							"defUid": 8,
-							"px": [656,384],
-							"fieldInstances": [
-								{ "__identifier": "HP", "__value": 1, "__type": "Int", "__tile": null, "defUid": 9, "realEditorValues": [] },
-								{ "__identifier": "Patrol", "__value": [{ "cx": 32, "cy": 23 }], "__type": "Array<Point>", "__tile": null, "defUid": 10, "realEditorValues": [{
-									"id": "V_String",
-									"params": ["32,23"]
-								}] }
-							]
-						},
 						{
 							"__identifier": "Player",
 							"__grid": [27,23],
@@ -467,7 +520,7 @@
 					"layerDefUid": 1,
 					"pxOffsetX": 0,
 					"pxOffsetY": 0,
-					"visible": true,
+					"visible": false,
 					"optionalRules": [],
 					"intGridCsv": [
 						0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
