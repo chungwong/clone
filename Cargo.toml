@@ -16,13 +16,16 @@ float-ord = "0.3.0"
 iyes_loopless = "0.7.0"
 leafwing-input-manager = "0.5.1"
 move_vis = { git = "https://github.com/chungwong/move_vis.git", rev ="7d0e981" }
+savefile="0.10"
+savefile-derive="0.10"
 
 [dependencies.bevy]
-version = "0.8.0"
+version = "0.8.1"
 default-features = false
 
 features = [
   "animation",
+  "bevy_asset",
   "bevy_gilrs",
   "bevy_winit",
   "render",

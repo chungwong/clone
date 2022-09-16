@@ -27,7 +27,7 @@ const TIME_TO_APEX: f32 = 0.4;
 
 const DEFAULT_GRAVITY_SCALE: f32 = 5.0;
 
-#[derive(Clone, Component, Debug, Default, Reflect)]
+#[derive(Clone, Component, Copy, Debug, Default, Reflect, Savefile)]
 #[reflect(Component)]
 pub(crate) struct Health {
     pub(crate) current: u32,

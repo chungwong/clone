@@ -9,6 +9,7 @@ pub(crate) enum GameState {
     LoadingLevel,
     MainMenu,
     Paused,
+    SaveMenu,
     Splash,
 }
 
@@ -22,6 +23,7 @@ impl Default for GameState {
                 "InGame" => Self::InGame,
                 "LoadingLevel" => Self::LoadingLevel,
                 "MainMenu" => Self::MainMenu,
+                "SaveMenu" => Self::SaveMenu,
                 "Splash" => Self::Splash,
                 _ => panic!("unrecognised game state {}", state),
             }

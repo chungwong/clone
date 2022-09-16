@@ -4,6 +4,7 @@ use std::collections::{HashMap, HashSet};
 use crate::{
     physics::*,
     player::Player,
+    save::SaveEvent,
     state::{ConditionSet, GameState},
 };
 
@@ -66,6 +67,8 @@ fn upsert_check_point(
     }
 }
 
+/// Mainly for when a game started and the player died before reaching any checkpoints.
+/// Act as the default spawn point.
 fn save_initial_check_point(
     mut cmd: Commands,
     mut players: Query<(Entity, &Transform, Option<&mut LastCheckPoint>), Added<Player>>,
@@ -82,6 +85,7 @@ fn save_initial_check_point(
     }
 }
 
+/// Save the touched checkpoint
 fn save_last_check_point(
     mut cmd: Commands,
     check_points: Query<
@@ -90,6 +94,7 @@ fn save_last_check_point(
     >,
     mut players: Query<(Entity, Option<&mut LastCheckPoint>), With<Player>>,
     level_selection: Res<LevelSelection>,
+    mut save_event: EventWriter<SaveEvent>,
 ) {
     for (transform, colliding_entities, _) in check_points.iter() {
         for (player_entity, mut last_check_point) in players.iter_mut() {
@@ -101,6 +106,7 @@ fn save_last_check_point(
                     transform.translation(),
                     level_selection.clone(),
                 );
+                save_event.send(SaveEvent);
             }
         }
     }

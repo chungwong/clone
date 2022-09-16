@@ -1,11 +1,17 @@
 #![feature(trait_alias)]
+#![feature(path_file_prefix)]
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
+
+#[macro_use]
+extern crate savefile_derive;
+
 mod audio;
 mod camera;
 mod input;
 mod npc;
 mod physics;
 mod player;
+mod save;
 mod splash_screen;
 mod state;
 mod tilemap;
@@ -27,6 +33,7 @@ pub fn run() {
         .add_plugin(npc::NpcPlugin)
         .add_plugin(physics::PhysicsPlugin)
         .add_plugin(player::PlayerPlugin)
+        .add_plugin(save::SavePlugin)
         .add_plugin(splash_screen::SplashScreenPlugin)
         .add_plugin(ui::UiPlugin)
         .add_plugin(weapon::WeaponPlugin);

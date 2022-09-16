@@ -5,6 +5,7 @@ use bevy::prelude::*;
 use crate::{
     input::{PlayerAction, PlayerActionState},
     physics::*,
+    save::CurrentSave,
     tilemap::{check_point::LastCheckPoint, EntityInstance, LevelSelection, LevelSize},
     weapon::{spawn_projectile, WeaponCooldown},
 };
@@ -370,9 +371,16 @@ pub(crate) fn spawn_player(
     mut cmd: Commands,
     entity_query: Query<(Entity, &Transform, &EntityInstance), Added<EntityInstance>>,
     asset_server: Res<AssetServer>,
+    current_save: Res<CurrentSave>,
 ) {
     for (entity, transform, entity_instance) in entity_query.iter() {
         if entity_instance.identifier == *"Player" {
+            let hp: Health = if let Some(data) = current_save.0.data {
+                data.player_health
+            } else {
+                entity_instance.into()
+            };
+
             cmd.entity(entity).insert_bundle(PlayerBundle {
                 sprite_bundle: SpriteBundle {
                     texture: asset_server.load("player.png"),
@@ -397,7 +405,7 @@ pub(crate) fn spawn_player(
                     ..default()
                 },
                 entity_instance: entity_instance.clone(),
-                hp: entity_instance.into(),
+                hp,
                 ..default()
             });
         }

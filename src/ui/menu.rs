@@ -2,17 +2,17 @@ use bevy::{app::AppExit, prelude::*, window::close_on_esc};
 
 use crate::state::*;
 
-const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);
-const HOVERED_BUTTON: Color = Color::rgb(0.25, 0.25, 0.25);
-const PRESSED_BUTTON: Color = Color::rgb(0.35, 0.75, 0.35);
+pub(crate) const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);
+pub(crate) const HOVERED_BUTTON: Color = Color::rgb(0.25, 0.25, 0.25);
+pub(crate) const PRESSED_BUTTON: Color = Color::rgb(0.35, 0.75, 0.35);
 
-const TEXT_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
+pub(crate) const TEXT_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
 
 #[derive(Component)]
 struct QuitButton;
 
 #[derive(Component)]
-struct EnterButton;
+struct StartGameButton;
 
 #[derive(Component)]
 struct ResumeButton;
@@ -27,14 +27,14 @@ pub(crate) struct MenuPlugin;
 
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
-        app.add_enter_system(GameState::MainMenu, setup_menu)
+        app.add_system(button_interact_visual)
+            .add_enter_system(GameState::MainMenu, setup_menu)
             .add_system_set(
                 ConditionSet::new()
                     .run_in_state(GameState::MainMenu)
                     .with_system(close_on_esc)
-                    .with_system(button_interact_visual)
-                    .with_system(button_exit.run_if(on_button_interact::<QuitButton>))
-                    .with_system(button_game.run_if(on_button_interact::<EnterButton>))
+                    .with_system(button_exit.run_if(button_interact::<QuitButton>))
+                    .with_system(button_game.run_if(button_interact::<StartGameButton>))
                     .into(),
             )
             .add_exit_system(GameState::MainMenu, despawn_with::<OnMainMenuScreen>)
@@ -42,9 +42,8 @@ impl Plugin for MenuPlugin {
             .add_system_set(
                 ConditionSet::new()
                     .run_in_state(GameState::Paused)
-                    .with_system(button_interact_visual)
-                    .with_system(button_resume.run_if(on_button_interact::<ResumeButton>))
-                    .with_system(button_exit.run_if(on_button_interact::<QuitButton>))
+                    .with_system(button_resume.run_if(button_interact::<ResumeButton>))
+                    .with_system(button_exit.run_if(button_interact::<QuitButton>))
                     .into(),
             )
             .add_exit_system(GameState::Paused, despawn_with::<OnPauseScreen>);
@@ -106,10 +105,10 @@ fn setup_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                     color: NORMAL_BUTTON.into(),
                     ..default()
                 })
-                .insert(EnterButton)
+                .insert(StartGameButton)
                 .with_children(|parent| {
                     parent.spawn_bundle(TextBundle {
-                        text: Text::from_section("New Game", button_text_style.clone()),
+                        text: Text::from_section("Start Game", button_text_style.clone()),
                         ..default()
                     });
                 });
@@ -130,7 +129,7 @@ fn setup_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
 }
 
 // This system handles changing all buttons color based on mouse interaction
-fn button_interact_visual(
+pub(crate) fn button_interact_visual(
     mut query: Query<(&Interaction, &mut UiColor), (Changed<Interaction>, With<Button>)>,
 ) {
     for (interaction, mut color) in query.iter_mut() {
@@ -145,7 +144,7 @@ fn button_interact_visual(
 /// Condition to help with handling multiple buttons
 ///
 /// Returns true when a button identified by a given component is clicked.
-fn on_button_interact<B: Component>(
+pub(crate) fn button_interact<B: Component>(
     query: Query<&Interaction, (Changed<Interaction>, With<Button>, With<B>)>,
 ) -> bool {
     for interaction in query.iter() {
@@ -162,9 +161,10 @@ fn button_exit(mut ev: EventWriter<AppExit>) {
     ev.send(AppExit);
 }
 
-/// Handler for the Enter Game button
+/// Handler for the Start Game button
 fn button_game(mut commands: Commands) {
-    commands.insert_resource(NextState(GameState::LoadingLevel));
+    //commands.insert_resource(NextState(GameState::LoadingLevel));
+    commands.insert_resource(NextState(GameState::SaveMenu));
 }
 
 /// Handler for the resume Game button
@@ -227,4 +227,14 @@ fn pause_menu(mut cmd: Commands, asset_server: Res<AssetServer>) {
                 });
             });
     });
+}
+
+pub(crate) fn on_esc(
+    mut cmd: Commands,
+    keys: Res<Input<KeyCode>>,
+    state: Res<CurrentState<GameState>>,
+) {
+    if keys.just_pressed(KeyCode::Escape) && state.0 != GameState::MainMenu {
+        cmd.insert_resource(NextState(GameState::MainMenu));
+    }
 }
