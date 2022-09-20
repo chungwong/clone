@@ -7,7 +7,7 @@ use crate::{
         despawn_with, AppLooplessStateExt, ConditionHelpers, ConditionSet, GameState,
         IntoConditionalSystem, NextState,
     },
-    ui::menu::{button_interact, on_esc, NORMAL_BUTTON, TEXT_COLOR},
+    ui::menu::{button_interact, get_button_style, on_esc, BackButton, NORMAL_BUTTON, TEXT_COLOR},
 };
 
 const SAVE_DIR: &str = "saves";
@@ -79,14 +79,6 @@ impl DeleteModeButton {
         if let Ok(mut delete_mode) = delete_mode.get_single_mut() {
             delete_mode.0 = !delete_mode.0;
         }
-    }
-}
-
-#[derive(Component)]
-struct BackButton;
-impl BackButton {
-    fn to_main_menu(mut cmd: Commands) {
-        cmd.insert_resource(NextState(GameState::MainMenu));
     }
 }
 
@@ -246,13 +238,8 @@ fn save_system(world: &mut World) {
 fn save_menu(mut cmd: Commands, asset_server: Res<AssetServer>) {
     let font = asset_server.load("fonts/monogram.ttf");
 
-    let button_style = Style {
-        size: Size::new(Val::Px(250.0), Val::Px(65.0)),
-        margin: UiRect::all(Val::Px(20.0)),
-        justify_content: JustifyContent::Center,
-        align_items: AlignItems::Center,
-        ..default()
-    };
+    let button_style = get_button_style();
+
     let button_text_style = TextStyle {
         font: font.clone(),
         font_size: 40.0,
@@ -320,19 +307,7 @@ fn save_menu(mut cmd: Commands, asset_server: Res<AssetServer>) {
                         });
                 });
 
-                parent
-                    .spawn_bundle(ButtonBundle {
-                        style: button_style.clone(),
-                        color: NORMAL_BUTTON.into(),
-                        ..default()
-                    })
-                    .insert(BackButton)
-                    .with_children(|parent| {
-                        parent.spawn_bundle(TextBundle {
-                            text: Text::from_section("Back", button_text_style),
-                            ..default()
-                        });
-                    });
+                BackButton::spawn(parent, &asset_server);
             });
 
         let SaveSlots(saves) = SaveSlots::get_saves();

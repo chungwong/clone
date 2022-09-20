@@ -1,4 +1,5 @@
 pub(crate) mod menu;
+pub(crate) mod options;
 
 use bevy::prelude::*;
 

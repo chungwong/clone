@@ -6,7 +6,10 @@ use bevy_kira_audio::{
     AudioSource,
 };
 
-use crate::state::{AppLooplessStateExt, GameState};
+use crate::{
+    state::{AppLooplessStateExt, GameState},
+    ui::menu::GameConfig,
+};
 
 trait Channel = Sync + Send + Resource;
 
@@ -17,7 +20,6 @@ pub(crate) struct ChannelState<T> {
     pub(crate) paused: bool,
     pub(crate) resumed: bool,
     pub(crate) stopped: bool,
-    pub(crate) volume: f64,
     _marker: PhantomData<T>,
 }
 
@@ -39,7 +41,6 @@ impl<T> Default for ChannelState<T> {
             resumed: false,
             paused: false,
             stopped: false,
-            volume: 1.0,
             _marker: PhantomData,
         }
     }
@@ -73,7 +74,6 @@ fn setup_controls<T: Channel>() -> SystemSet {
         .with_system(pause_channel::<T>)
         .with_system(resume_channel::<T>)
         .with_system(stop_channel::<T>)
-        .with_system(set_channel_volume::<T>)
 }
 
 #[allow(clippy::only_used_in_recursion)]
@@ -81,8 +81,10 @@ fn play_menu_music(
     mut channel_state: ResMut<ChannelState<MusicChannel>>,
     asset_server: Res<AssetServer>,
     audio: Res<AudioChannel<MusicChannel>>,
+    game_config: Res<GameConfig>,
 ) {
     audio.stop();
+    audio.set_volume(*game_config.audio.music_volume);
     channel_state.reset();
     channel_state.handle = Some(asset_server.load("music/TownTheme.mp3"));
     channel_state.stopped = true;
@@ -94,8 +96,10 @@ fn play_game_music(
     mut channel_state: ResMut<ChannelState<MusicChannel>>,
     asset_server: Res<AssetServer>,
     audio: Res<AudioChannel<MusicChannel>>,
+    game_config: Res<GameConfig>,
 ) {
     audio.stop();
+    audio.set_volume(*game_config.audio.music_volume);
     channel_state.reset();
     channel_state.handle = Some(asset_server.load("music/ThemeForest.mp3"));
     channel_state.stopped = true;
@@ -151,15 +155,5 @@ fn stop_channel<T: Channel>(
     if channel_state.stopped {
         audio.stop();
         channel_state.reset();
-    }
-}
-
-fn set_channel_volume<T: Channel>(
-    mut channel_state: ResMut<ChannelState<T>>,
-    audio: Res<AudioChannel<T>>,
-) {
-    if channel_state.volume != 0.0 {
-        audio.set_volume(channel_state.volume);
-        channel_state.volume = 0.0;
     }
 }

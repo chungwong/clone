@@ -5,9 +5,11 @@ pub(crate) use iyes_loopless::prelude::*;
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub(crate) enum GameState {
+    AudioMenu,
     InGame,
     LoadingLevel,
     MainMenu,
+    OptionMenu,
     Paused,
     SaveMenu,
     Splash,
@@ -20,9 +22,10 @@ impl Default for GameState {
         // ❯ GAMESTATE=InGame cargo run
         if let Ok(state) = env::var("GAMESTATE") {
             match state.as_ref() {
-                "InGame" => Self::InGame,
+                "AudioMenu" => Self::AudioMenu,
                 "LoadingLevel" => Self::LoadingLevel,
                 "MainMenu" => Self::MainMenu,
+                "OptionMenu" => Self::OptionMenu,
                 "SaveMenu" => Self::SaveMenu,
                 "Splash" => Self::Splash,
                 _ => panic!("unrecognised game state {}", state),
