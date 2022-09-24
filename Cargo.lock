@@ -314,6 +314,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_asset_loader"
+version = "0.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "91275716531c98d9907ee8c57854d11e3688780a9cefc66b1d4da601a3e3c41e"
+dependencies = [
+ "anyhow",
+ "bevy",
+ "bevy_asset_loader_derive",
+ "bevy_common_assets",
+ "iyes_loopless",
+ "serde",
+]
+
+[[package]]
+name = "bevy_asset_loader_derive"
+version = "0.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e721755806423f711c0934295872808adb20d379b3073c679ed544960fc84b6d"
+dependencies = [
+ "proc-macro2 1.0.43",
+ "quote 1.0.21",
+ "syn 1.0.99",
+]
+
+[[package]]
 name = "bevy_audio"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -327,6 +352,18 @@ dependencies = [
  "bevy_utils",
  "parking_lot 0.12.1",
  "rodio",
+]
+
+[[package]]
+name = "bevy_common_assets"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3f7be9ee39085d8319d5cd853447b0b5c4f8b4bfd647aec91e2bd996e9db67ef"
+dependencies = [
+ "anyhow",
+ "bevy",
+ "ron",
+ "serde",
 ]
 
 [[package]]
@@ -3114,6 +3151,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
+ "bevy_asset_loader",
  "bevy_ecs_ldtk",
  "bevy_egui",
  "bevy_kira_audio",

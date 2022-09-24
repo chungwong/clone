@@ -42,6 +42,6 @@ fn splash_setup(mut cmd: Commands, asset_server: Res<AssetServer>) {
 
 fn countdown(mut cmd: Commands, time: Res<Time>, mut timer: ResMut<SplashTimer>) {
     if timer.tick(time.delta()).finished() {
-        cmd.insert_resource(NextState(GameState::MainMenu));
+        cmd.insert_resource(NextState(GameState::MainMenuAssetLoading));
     }
 }

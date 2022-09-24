@@ -1,0 +1,11 @@
+({
+    "main_menu.bgm": File (
+        path: "audio/TownTheme.mp3",
+    ),
+    "image.player": File (
+        path: "images/player.png",
+    ),
+    "sounds.bgm": File (
+        path: "audio/ThemeForest.mp3",
+    ),
+})

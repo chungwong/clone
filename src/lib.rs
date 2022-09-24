@@ -5,6 +5,7 @@
 #[macro_use]
 extern crate savefile_derive;
 
+mod asset;
 mod audio;
 mod camera;
 mod input;
@@ -26,6 +27,7 @@ pub fn run() {
     app.add_plugins(DefaultPlugins)
         //state should be loaded first as there are a lot of plugins depend on `GameState`
         .add_plugin(state::StatePlugin)
+        .add_plugin(asset::AssetPlugin)
         .add_plugin(audio::AudioPlugin)
         .add_plugin(camera::CameraPlugin)
         .add_plugin(tilemap::TilemapPlugin)

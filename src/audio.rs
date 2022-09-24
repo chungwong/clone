@@ -3,10 +3,12 @@ use std::marker::PhantomData;
 use bevy::{ecs::system::Resource, prelude::*};
 use bevy_kira_audio::{
     AudioApp, AudioChannel, AudioControl, AudioInstance, AudioPlugin as KiraAudioPlugin,
-    AudioSource,
 };
 
+pub(crate) type AudioSource = bevy_kira_audio::AudioSource;
+
 use crate::{
+    asset::{AudioAssets, MainMenuAssets},
     state::{AppLooplessStateExt, GameState},
     ui::menu::GameConfig,
 };
@@ -79,14 +81,14 @@ fn setup_controls<T: Channel>() -> SystemSet {
 #[allow(clippy::only_used_in_recursion)]
 fn play_menu_music(
     mut channel_state: ResMut<ChannelState<MusicChannel>>,
-    asset_server: Res<AssetServer>,
+    main_menu_assets: Res<MainMenuAssets>,
     audio: Res<AudioChannel<MusicChannel>>,
     game_config: Res<GameConfig>,
 ) {
     audio.stop();
     audio.set_volume(*game_config.audio.music_volume);
     channel_state.reset();
-    channel_state.handle = Some(asset_server.load("music/TownTheme.mp3"));
+    channel_state.handle = Some(main_menu_assets.bgm.clone());
     channel_state.stopped = true;
     channel_state.looped = true;
 }
@@ -94,14 +96,14 @@ fn play_menu_music(
 #[allow(clippy::only_used_in_recursion)]
 fn play_game_music(
     mut channel_state: ResMut<ChannelState<MusicChannel>>,
-    asset_server: Res<AssetServer>,
+    audio_assets: Res<AudioAssets>,
     audio: Res<AudioChannel<MusicChannel>>,
     game_config: Res<GameConfig>,
 ) {
     audio.stop();
     audio.set_volume(*game_config.audio.music_volume);
     channel_state.reset();
-    channel_state.handle = Some(asset_server.load("music/ThemeForest.mp3"));
+    channel_state.handle = Some(audio_assets.bgm.clone());
     channel_state.stopped = true;
     channel_state.looped = true;
 }

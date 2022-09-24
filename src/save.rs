@@ -19,7 +19,7 @@ struct OnSaveScreen;
 struct NewSaveButton;
 impl NewSaveButton {
     fn create(mut cmd: Commands, mut current_save: ResMut<CurrentSave>) {
-        cmd.insert_resource(NextState(GameState::LoadingLevel));
+        cmd.insert_resource(NextState(GameState::AssetLoading));
         current_save.0 = SaveSlots::new_save();
     }
 }
@@ -43,7 +43,7 @@ impl LoadSaveButton {
                     current_save.0.data = Some(save_data);
                 }
 
-                cmd.insert_resource(NextState(GameState::LoadingLevel));
+                cmd.insert_resource(NextState(GameState::AssetLoading));
             }
         }
     }

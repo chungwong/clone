@@ -3,6 +3,7 @@
 use bevy::prelude::*;
 
 use crate::{
+    asset::ImageAssets,
     physics::*,
     player::Health,
     state::{ConditionSet, GameState},
@@ -32,7 +33,7 @@ impl Enemy {
         entity_query: Query<(Entity, &Transform, &EntityInstance), Added<EntityInstance>>,
         level_query: Query<&Handle<LdtkLevel>>,
         levels: Res<Assets<LdtkLevel>>,
-        asset_server: Res<AssetServer>,
+        image_assets: Res<ImageAssets>,
     ) {
         for (entity, transform, entity_instance) in entity_query.iter() {
             if entity_instance.identifier == *"Mob" {
@@ -56,7 +57,7 @@ impl Enemy {
                             color: Color::RED,
                             ..default()
                         },
-                        texture: asset_server.load("player.png"),
+                        texture: image_assets.player.clone(),
                         transform: *transform,
                         ..default()
                     },

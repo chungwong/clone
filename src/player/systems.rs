@@ -3,6 +3,7 @@ use std::time::Duration;
 use bevy::prelude::*;
 
 use crate::{
+    asset::ImageAssets,
     input::{PlayerAction, PlayerActionState},
     physics::*,
     save::CurrentSave,
@@ -370,7 +371,7 @@ pub(crate) fn process_death_event(
 pub(crate) fn spawn_player(
     mut cmd: Commands,
     entity_query: Query<(Entity, &Transform, &EntityInstance), Added<EntityInstance>>,
-    asset_server: Res<AssetServer>,
+    image_assets: Res<ImageAssets>,
     current_save: Res<CurrentSave>,
 ) {
     for (entity, transform, entity_instance) in entity_query.iter() {
@@ -383,7 +384,7 @@ pub(crate) fn spawn_player(
 
             cmd.entity(entity).insert_bundle(PlayerBundle {
                 sprite_bundle: SpriteBundle {
-                    texture: asset_server.load("player.png"),
+                    texture: image_assets.player.clone(),
                     transform: *transform,
                     ..default()
                 },
