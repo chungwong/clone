@@ -78,7 +78,6 @@ fn setup_controls<T: Channel>() -> SystemSet {
         .with_system(stop_channel::<T>)
 }
 
-#[allow(clippy::only_used_in_recursion)]
 fn play_menu_music(
     mut channel_state: ResMut<ChannelState<MusicChannel>>,
     main_menu_assets: Res<MainMenuAssets>,
@@ -93,7 +92,6 @@ fn play_menu_music(
     channel_state.looped = true;
 }
 
-#[allow(clippy::only_used_in_recursion)]
 fn play_game_music(
     mut channel_state: ResMut<ChannelState<MusicChannel>>,
     audio_assets: Res<AudioAssets>,

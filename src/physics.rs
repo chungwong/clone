@@ -16,7 +16,6 @@ pub(crate) struct PhysicsPlugin;
 impl Plugin for PhysicsPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(SCALE))
-            .add_plugin(RapierDebugRenderPlugin::default())
             .add_enter_system(GameState::InGame, setup)
             .add_system_set(
                 ConditionSet::new()

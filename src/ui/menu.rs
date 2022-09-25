@@ -209,7 +209,9 @@ impl Plugin for MenuPlugin {
     }
 }
 
-fn setup_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn setup_menu(mut cmd: Commands, asset_server: Res<AssetServer>) {
+    cmd.spawn_bundle(Camera2dBundle::default());
+
     let font = asset_server.load("fonts/monogram.ttf");
 
     let button_style = get_button_style();
@@ -220,67 +222,66 @@ fn setup_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
         color: TEXT_COLOR,
     };
 
-    commands
-        .spawn_bundle(NodeBundle {
+    cmd.spawn_bundle(NodeBundle {
+        style: Style {
+            margin: UiRect::all(Val::Auto),
+            flex_direction: FlexDirection::ColumnReverse,
+            align_items: AlignItems::Center,
+            ..default()
+        },
+        color: Color::CRIMSON.into(),
+        ..default()
+    })
+    .insert(OnMainMenuScreen)
+    .with_children(|parent| {
+        // Display the game name
+        parent.spawn_bundle(TextBundle {
             style: Style {
-                margin: UiRect::all(Val::Auto),
-                flex_direction: FlexDirection::ColumnReverse,
-                align_items: AlignItems::Center,
+                margin: UiRect::all(Val::Px(50.0)),
                 ..default()
             },
-            color: Color::CRIMSON.into(),
-            ..default()
-        })
-        .insert(OnMainMenuScreen)
-        .with_children(|parent| {
-            // Display the game name
-            parent.spawn_bundle(TextBundle {
-                style: Style {
-                    margin: UiRect::all(Val::Px(50.0)),
-                    ..default()
+            text: Text::from_section(
+                "Reckoning",
+                TextStyle {
+                    font: font.clone(),
+                    font_size: 80.0,
+                    color: TEXT_COLOR,
                 },
-                text: Text::from_section(
-                    "Reckoning",
-                    TextStyle {
-                        font: font.clone(),
-                        font_size: 80.0,
-                        color: TEXT_COLOR,
-                    },
-                ),
+            ),
+            ..default()
+        });
+
+        // Main menu buttons
+        parent
+            .spawn_bundle(ButtonBundle {
+                style: button_style.clone(),
+                color: NORMAL_BUTTON.into(),
                 ..default()
+            })
+            .insert(StartGameButton)
+            .with_children(|parent| {
+                parent.spawn_bundle(TextBundle {
+                    text: Text::from_section("Start Game", button_text_style.clone()),
+                    ..default()
+                });
             });
 
-            // Main menu buttons
-            parent
-                .spawn_bundle(ButtonBundle {
-                    style: button_style.clone(),
-                    color: NORMAL_BUTTON.into(),
+        parent
+            .spawn_bundle(ButtonBundle {
+                style: button_style.clone(),
+                color: NORMAL_BUTTON.into(),
+                ..default()
+            })
+            .insert(OptionButton)
+            .with_children(|parent| {
+                parent.spawn_bundle(TextBundle {
+                    text: Text::from_section("Option", button_text_style),
                     ..default()
-                })
-                .insert(StartGameButton)
-                .with_children(|parent| {
-                    parent.spawn_bundle(TextBundle {
-                        text: Text::from_section("Start Game", button_text_style.clone()),
-                        ..default()
-                    });
                 });
+            });
 
-            parent
-                .spawn_bundle(ButtonBundle {
-                    style: button_style.clone(),
-                    color: NORMAL_BUTTON.into(),
-                    ..default()
-                })
-                .insert(OptionButton)
-                .with_children(|parent| {
-                    parent.spawn_bundle(TextBundle {
-                        text: Text::from_section("Option", button_text_style),
-                        ..default()
-                    });
-                });
-
-            QuitButton::spawn(parent, &asset_server);
-        });
+        QuitButton::spawn(parent, &asset_server);
+    });
 }
 
 // This system handles changing all buttons color based on mouse interaction

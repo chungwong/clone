@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use global_state::Persistent;
+
 use crate::{
     input::MenuInputManagerBundle,
     player::Player,
@@ -41,8 +43,8 @@ impl Plugin for CameraPlugin {
 }
 
 fn setup(mut cmd: Commands) {
-    cmd.spawn_bundle(Camera2dBundle::default())
-        .insert_bundle(MenuInputManagerBundle::default());
+    cmd.spawn_bundle(MenuInputManagerBundle::default())
+        .insert(Persistent);
 }
 
 fn fit_camera_to_level(

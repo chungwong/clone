@@ -30,7 +30,7 @@ impl Plugin for TilemapPlugin {
                 set_clear_color: SetClearColor::FromLevelBackground,
                 ..default()
             })
-            .add_enter_system(GameState::AssetLoading, setup)
+            .add_enter_system(GameState::InGame, setup)
             .add_system_set(
                 ConditionSet::new()
                     .run_in_state(GameState::InGame)
@@ -48,10 +48,12 @@ impl Plugin for TilemapPlugin {
     }
 }
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn setup(mut cmd: Commands, asset_server: Res<AssetServer>) {
+    cmd.spawn_bundle(Camera2dBundle::default());
+
     asset_server.watch_for_changes().unwrap();
 
-    commands.spawn_bundle(LdtkWorldBundle {
+    cmd.spawn_bundle(LdtkWorldBundle {
         ldtk_handle: asset_server.load("levels/reckoning.ldtk"),
         ..default()
     });

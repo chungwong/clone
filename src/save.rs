@@ -236,6 +236,8 @@ fn save_system(world: &mut World) {
 }
 
 fn save_menu(mut cmd: Commands, asset_server: Res<AssetServer>) {
+    cmd.spawn_bundle(Camera2dBundle::default());
+
     let font = asset_server.load("fonts/monogram.ttf");
 
     let button_style = get_button_style();

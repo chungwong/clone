@@ -13,6 +13,7 @@ bevy_egui = "0.15.0"
 bevy_rapier2d = "0.16.0"
 bevy-inspector-egui = "0.12.0"
 bevy_kira_audio = { version = "0.12.0", features = ["mp3"] }
+global_state = { path = "./crates/global_state" }
 float-ord = "0.3.0"
 iyes_loopless = "0.7.0"
 leafwing-input-manager = "0.5.1"

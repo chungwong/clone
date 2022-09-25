@@ -1,9 +1,11 @@
 use std::env;
 
 use bevy::prelude::*;
+use global_state::{AddGlobalState, GlobalState};
 pub(crate) use iyes_loopless::prelude::*;
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+// GlobalState will despawn all compoents on state exit, unless they are marked with Persistent
+#[derive(Clone, Copy, Debug, Eq, Hash, GlobalState, PartialEq)]
 pub(crate) enum GameState {
     AssetLoading,
     AudioMenu,
@@ -25,7 +27,7 @@ impl Default for GameState {
             match state.as_ref() {
                 "AudioMenu" => Self::AudioMenu,
                 "AssetLoading" => Self::AssetLoading,
-                "MainMenu" => Self::MainMenu,
+                "MainMenuAssetLoading" => Self::MainMenuAssetLoading,
                 "OptionMenu" => Self::OptionMenu,
                 "SaveMenu" => Self::SaveMenu,
                 "Splash" => Self::Splash,
@@ -41,7 +43,8 @@ pub(crate) struct StatePlugin;
 
 impl Plugin for StatePlugin {
     fn build(&self, app: &mut App) {
-        app.add_loopless_state(GameState::default());
+        app.add_loopless_state(GameState::default())
+            .add_global_state::<GameState>();
     }
 }
 

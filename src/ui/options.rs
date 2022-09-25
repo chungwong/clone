@@ -130,6 +130,8 @@ impl Plugin for OptionPlugin {
 }
 
 fn option_menu(mut cmd: Commands, asset_server: Res<AssetServer>) {
+    cmd.spawn_bundle(Camera2dBundle::default());
+
     let font = asset_server.load("fonts/monogram.ttf");
 
     let button_style = get_button_style();
@@ -225,6 +227,8 @@ fn option_menu(mut cmd: Commands, asset_server: Res<AssetServer>) {
 }
 
 fn audio_menu(mut cmd: Commands, asset_server: Res<AssetServer>, game_config: Res<GameConfig>) {
+    cmd.spawn_bundle(Camera2dBundle::default());
+
     let audio_config = &game_config.audio;
 
     let font = asset_server.load("fonts/monogram.ttf");
