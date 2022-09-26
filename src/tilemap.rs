@@ -39,7 +39,7 @@ impl Plugin for TilemapPlugin {
             )
             .add_system_set(
                 ConditionSet::new()
-                    .run_in_state(GameState::AssetLoading)
+                    .run_in_state(GameState::InGameAssetLoading)
                     .with_system(set_boundary)
                     .into(),
             )

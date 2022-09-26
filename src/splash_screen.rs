@@ -1,8 +1,6 @@
-use crate::state::*;
 use bevy::prelude::*;
 
-#[derive(Component)]
-struct OnSplashScreen;
+use crate::{asset::FontAssets, state::*};
 
 #[derive(Deref, DerefMut)]
 struct SplashTimer(Timer);
@@ -12,15 +10,14 @@ pub(crate) struct SplashScreenPlugin;
 impl Plugin for SplashScreenPlugin {
     fn build(&self, app: &mut App) {
         app.add_enter_system(GameState::Splash, splash_setup)
-            .add_system(countdown.run_in_state(GameState::Splash))
-            .add_exit_system(GameState::Splash, despawn_with::<OnSplashScreen>);
+            .add_system(countdown.run_in_state(GameState::Splash));
     }
 }
 
-fn splash_setup(mut cmd: Commands, asset_server: Res<AssetServer>) {
+fn splash_setup(mut cmd: Commands, font_assets: Res<FontAssets>) {
     cmd.spawn_bundle(Camera2dBundle::default());
 
-    let font = asset_server.load("fonts/monogram.ttf");
+    let font = font_assets.monogram.clone();
 
     let text_style = TextStyle {
         font,
@@ -36,8 +33,7 @@ fn splash_setup(mut cmd: Commands, asset_server: Res<AssetServer>) {
     cmd.spawn_bundle(Text2dBundle {
         text: Text::from_section("Splash Screen", text_style).with_alignment(text_alignment),
         ..default()
-    })
-    .insert(OnSplashScreen);
+    });
 
     cmd.insert_resource(SplashTimer(Timer::from_seconds(1.0, false)));
 }

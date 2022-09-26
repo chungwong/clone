@@ -2,10 +2,11 @@ use bevy::{ecs::system::SystemState, prelude::*, tasks::IoTaskPool};
 use std::{fs, path::PathBuf};
 
 use crate::{
+    asset::FontAssets,
     player::{Health, Player},
     state::{
-        despawn_with, AppLooplessStateExt, ConditionHelpers, ConditionSet, GameState,
-        IntoConditionalSystem, NextState,
+        AppLooplessStateExt, ConditionHelpers, ConditionSet, GameState, IntoConditionalSystem,
+        NextState,
     },
     ui::menu::{button_interact, get_button_style, on_esc, BackButton, NORMAL_BUTTON, TEXT_COLOR},
 };
@@ -13,13 +14,10 @@ use crate::{
 const SAVE_DIR: &str = "saves";
 
 #[derive(Component)]
-struct OnSaveScreen;
-
-#[derive(Component)]
 struct NewSaveButton;
 impl NewSaveButton {
     fn create(mut cmd: Commands, mut current_save: ResMut<CurrentSave>) {
-        cmd.insert_resource(NextState(GameState::AssetLoading));
+        cmd.insert_resource(NextState(GameState::InGameAssetLoading));
         current_save.0 = SaveSlots::new_save();
     }
 }
@@ -43,7 +41,7 @@ impl LoadSaveButton {
                     current_save.0.data = Some(save_data);
                 }
 
-                cmd.insert_resource(NextState(GameState::AssetLoading));
+                cmd.insert_resource(NextState(GameState::InGameAssetLoading));
             }
         }
     }
@@ -190,8 +188,7 @@ impl Plugin for SavePlugin {
                 )
                 .run_if(on_save_event)
                 .at_end(),
-            )
-            .add_exit_system(GameState::SaveMenu, despawn_with::<OnSaveScreen>);
+            );
     }
 }
 
@@ -235,10 +232,10 @@ fn save_system(world: &mut World) {
     }
 }
 
-fn save_menu(mut cmd: Commands, asset_server: Res<AssetServer>) {
+fn save_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
     cmd.spawn_bundle(Camera2dBundle::default());
 
-    let font = asset_server.load("fonts/monogram.ttf");
+    let font = font_assets.monogram.clone();
 
     let button_style = get_button_style();
 
@@ -257,7 +254,6 @@ fn save_menu(mut cmd: Commands, asset_server: Res<AssetServer>) {
         color: Color::CRIMSON.into(),
         ..default()
     })
-    .insert(OnSaveScreen)
     .insert(DeleteMode(false))
     .with_children(|parent| {
         parent
@@ -309,7 +305,7 @@ fn save_menu(mut cmd: Commands, asset_server: Res<AssetServer>) {
                         });
                 });
 
-                BackButton::spawn(parent, &asset_server);
+                BackButton::spawn(parent, button_text_style.clone());
             });
 
         let SaveSlots(saves) = SaveSlots::get_saves();
@@ -354,7 +350,7 @@ fn update_menu(
     mut delete_buttons: Query<Entity, With<DeleteButton>>,
     delete_mode: Query<&DeleteMode, Changed<DeleteMode>>,
     mut button_text: Query<&mut Text, With<DeleteModeButtonText>>,
-    asset_server: Res<AssetServer>,
+    font_assets: Res<FontAssets>,
 ) {
     if let Ok(DeleteMode(delete_mode)) = delete_mode.get_single() {
         if let Ok(mut delete_text) = button_text.get_single_mut() {
@@ -364,7 +360,7 @@ fn update_menu(
 
                 // insert delete buttons
                 let button_text_style = TextStyle {
-                    font: asset_server.load("fonts/monogram.ttf"),
+                    font: font_assets.monogram.clone(),
                     font_size: 40.0,
                     color: TEXT_COLOR,
                 };

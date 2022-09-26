@@ -1,21 +1,13 @@
 use bevy::prelude::*;
 
 use crate::{
-    state::{
-        despawn_with, AppLooplessStateExt, ConditionSet, GameState, IntoConditionalSystem,
-        NextState,
-    },
+    asset::FontAssets,
+    state::{AppLooplessStateExt, ConditionSet, GameState, IntoConditionalSystem, NextState},
     ui::menu::{
         button_interact, get_button_style, on_esc, BackButton, GameConfig, GameConfigSaveEvent,
         SelectedOption, NORMAL_BUTTON, TEXT_COLOR,
     },
 };
-
-#[derive(Component)]
-struct OnOptionScreen;
-
-#[derive(Component)]
-struct OnAudioScreen;
 
 #[derive(Component)]
 struct AudioButton;
@@ -112,7 +104,6 @@ impl Plugin for OptionPlugin {
                     .with_system(on_esc)
                     .into(),
             )
-            .add_exit_system(GameState::OptionMenu, despawn_with::<OnOptionScreen>)
             .add_enter_system(GameState::AudioMenu, audio_menu)
             .add_system_set(
                 ConditionSet::new()
@@ -124,15 +115,13 @@ impl Plugin for OptionPlugin {
                     .with_system(setting_button::<MusicVolume>)
                     .with_system(on_esc)
                     .into(),
-            )
-            .add_exit_system(GameState::AudioMenu, despawn_with::<OnAudioScreen>);
+            );
     }
 }
 
-fn option_menu(mut cmd: Commands, asset_server: Res<AssetServer>) {
+fn option_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
     cmd.spawn_bundle(Camera2dBundle::default());
-
-    let font = asset_server.load("fonts/monogram.ttf");
+    let font = font_assets.monogram.clone();
 
     let button_style = get_button_style();
 
@@ -151,7 +140,6 @@ fn option_menu(mut cmd: Commands, asset_server: Res<AssetServer>) {
         color: Color::CRIMSON.into(),
         ..default()
     })
-    .insert(OnOptionScreen)
     .with_children(|parent| {
         parent
             .spawn_bundle(NodeBundle {
@@ -204,7 +192,7 @@ fn option_menu(mut cmd: Commands, asset_server: Res<AssetServer>) {
                     .with_children(|parent| {
                         parent.spawn_bundle(TextBundle::from_sections([TextSection::new(
                             "Audio",
-                            button_text_style,
+                            button_text_style.clone(),
                         )]));
                     });
             });
@@ -221,17 +209,17 @@ fn option_menu(mut cmd: Commands, asset_server: Res<AssetServer>) {
                 ..default()
             })
             .with_children(|parent| {
-                BackButton::spawn(parent, &asset_server);
+                BackButton::spawn(parent, button_text_style.clone());
             });
     });
 }
 
-fn audio_menu(mut cmd: Commands, asset_server: Res<AssetServer>, game_config: Res<GameConfig>) {
+fn audio_menu(mut cmd: Commands, game_config: Res<GameConfig>, font_assets: Res<FontAssets>) {
     cmd.spawn_bundle(Camera2dBundle::default());
 
     let audio_config = &game_config.audio;
 
-    let font = asset_server.load("fonts/monogram.ttf");
+    let font = font_assets.monogram.clone();
 
     let button_style = get_button_style();
 
@@ -251,7 +239,6 @@ fn audio_menu(mut cmd: Commands, asset_server: Res<AssetServer>, game_config: Re
         color: Color::CRIMSON.into(),
         ..default()
     })
-    .insert(OnAudioScreen)
     .with_children(|parent| {
         parent
             .spawn_bundle(NodeBundle {
@@ -381,7 +368,7 @@ fn audio_menu(mut cmd: Commands, asset_server: Res<AssetServer>, game_config: Re
                 ..default()
             })
             .with_children(|parent| {
-                BackButton::spawn(parent, &asset_server);
+                BackButton::spawn(parent, button_text_style.clone());
             });
     });
 }

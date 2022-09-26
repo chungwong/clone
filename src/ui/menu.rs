@@ -1,8 +1,11 @@
 use std::{fs, path::Path};
 
-use bevy::{app::AppExit, prelude::*, tasks::IoTaskPool, window::close_on_esc};
+use bevy::{
+    app::AppExit, hierarchy::ChildBuilder, prelude::*, tasks::IoTaskPool, window::close_on_esc,
+};
 
 use crate::{
+    asset::FontAssets,
     state::*,
     ui::options::{AudioConfig, OptionPlugin},
 };
@@ -44,16 +47,7 @@ impl QuitButton {
         ev.send(AppExit);
     }
 
-    pub(crate) fn spawn(
-        parent: &mut bevy::hierarchy::ChildBuilder,
-        asset_server: &Res<AssetServer>,
-    ) {
-        let button_text_style = TextStyle {
-            font: asset_server.load("fonts/monogram.ttf"),
-            font_size: 40.0,
-            color: TEXT_COLOR,
-        };
-
+    pub(crate) fn spawn(parent: &mut ChildBuilder, button_text_style: TextStyle) {
         parent
             .spawn_bundle(ButtonBundle {
                 style: get_button_style(),
@@ -98,16 +92,7 @@ impl BackButton {
         cmd.insert_resource(NextState(GameState::OptionMenu));
     }
 
-    pub(crate) fn spawn(
-        parent: &mut bevy::hierarchy::ChildBuilder,
-        asset_server: &Res<AssetServer>,
-    ) {
-        let button_text_style = TextStyle {
-            font: asset_server.load("fonts/monogram.ttf"),
-            font_size: 40.0,
-            color: TEXT_COLOR,
-        };
-
+    pub(crate) fn spawn(parent: &mut ChildBuilder, button_text_style: TextStyle) {
         parent
             .spawn_bundle(ButtonBundle {
                 style: get_button_style(),
@@ -123,12 +108,6 @@ impl BackButton {
             });
     }
 }
-
-#[derive(Component)]
-struct OnMainMenuScreen;
-
-#[derive(Component)]
-struct OnPauseScreen;
 
 #[derive(Component, Debug)]
 pub(crate) struct SelectedOption;
@@ -196,7 +175,6 @@ impl Plugin for MenuPlugin {
                     .with_system(OptionButton::show.run_if(button_interact::<OptionButton>))
                     .into(),
             )
-            .add_exit_system(GameState::MainMenu, despawn_with::<OnMainMenuScreen>)
             .add_enter_system(GameState::Paused, pause_menu)
             .add_system_set(
                 ConditionSet::new()
@@ -204,15 +182,14 @@ impl Plugin for MenuPlugin {
                     .with_system(ResumeButton::resume.run_if(button_interact::<ResumeButton>))
                     .with_system(QuitButton::exit.run_if(button_interact::<QuitButton>))
                     .into(),
-            )
-            .add_exit_system(GameState::Paused, despawn_with::<OnPauseScreen>);
+            );
     }
 }
 
-fn setup_menu(mut cmd: Commands, asset_server: Res<AssetServer>) {
+fn setup_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
     cmd.spawn_bundle(Camera2dBundle::default());
 
-    let font = asset_server.load("fonts/monogram.ttf");
+    let font = font_assets.monogram.clone();
 
     let button_style = get_button_style();
 
@@ -232,7 +209,6 @@ fn setup_menu(mut cmd: Commands, asset_server: Res<AssetServer>) {
         color: Color::CRIMSON.into(),
         ..default()
     })
-    .insert(OnMainMenuScreen)
     .with_children(|parent| {
         // Display the game name
         parent.spawn_bundle(TextBundle {
@@ -275,12 +251,12 @@ fn setup_menu(mut cmd: Commands, asset_server: Res<AssetServer>) {
             .insert(OptionButton)
             .with_children(|parent| {
                 parent.spawn_bundle(TextBundle {
-                    text: Text::from_section("Option", button_text_style),
+                    text: Text::from_section("Option", button_text_style.clone()),
                     ..default()
                 });
             });
 
-        QuitButton::spawn(parent, &asset_server);
+        QuitButton::spawn(parent, button_text_style);
     });
 }
 
@@ -316,8 +292,8 @@ pub(crate) fn button_interact<B: Component>(
     false
 }
 
-fn pause_menu(mut cmd: Commands, asset_server: Res<AssetServer>) {
-    let font = asset_server.load("fonts/monogram.ttf");
+fn pause_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
+    let font = font_assets.monogram.clone();
 
     let button_style = get_button_style();
 
@@ -337,7 +313,6 @@ fn pause_menu(mut cmd: Commands, asset_server: Res<AssetServer>) {
         color: Color::CRIMSON.into(),
         ..default()
     })
-    .insert(OnPauseScreen)
     .with_children(|parent| {
         parent
             .spawn_bundle(ButtonBundle {
@@ -353,7 +328,7 @@ fn pause_menu(mut cmd: Commands, asset_server: Res<AssetServer>) {
                 });
             });
 
-        QuitButton::spawn(parent, &asset_server);
+        QuitButton::spawn(parent, button_text_style.clone());
     });
 }
 

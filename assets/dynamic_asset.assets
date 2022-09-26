@@ -8,4 +8,7 @@
     "sounds.bgm": File (
         path: "audio/ThemeForest.mp3",
     ),
+    "font.monogram": File (
+        path: "fonts/monogram.ttf",
+    ),
 })
