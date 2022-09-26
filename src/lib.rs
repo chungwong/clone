@@ -2,9 +2,6 @@
 #![feature(path_file_prefix)]
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
-#[macro_use]
-extern crate savefile_derive;
-
 mod asset;
 mod audio;
 mod camera;

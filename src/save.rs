@@ -1,5 +1,12 @@
 use bevy::{ecs::system::SystemState, prelude::*, tasks::IoTaskPool};
-use std::{fs, path::PathBuf};
+use std::{
+    fs,
+    io::{Cursor, Error, Write},
+    path::{Path, PathBuf},
+};
+
+use rmp_serde::{Deserializer, Serializer};
+use serde::{Deserialize, Serialize};
 
 use crate::{
     asset::FontAssets,
@@ -35,7 +42,7 @@ impl LoadSaveButton {
                 debug!("use save {:?}", &current_save);
 
                 if let Some(path) = &current_save.0.path {
-                    let save_data: SaveData = savefile::load_file(path, 0).unwrap();
+                    let save_data: SaveData = load_file(path, 0).unwrap();
                     debug!("loaded save data {:?}", &save_data);
                     current_save.0.data = Some(save_data);
                 }
@@ -92,7 +99,7 @@ pub(crate) struct Save {
     pub(crate) data: Option<SaveData>,
 }
 
-#[derive(Clone, Copy, Debug, Savefile)]
+#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
 pub(crate) struct SaveData {
     pub(crate) player_health: Health,
 }
@@ -217,7 +224,7 @@ fn save_system(world: &mut World) {
 
                 let tmp_file = format!("{}_tmp", savefile.display());
 
-                savefile::save_file(&tmp_file, 0, &save_data).expect("Error while saving");
+                save_file(&tmp_file, 0, &save_data).expect("Error while saving");
 
                 if fs::rename(tmp_file, savefile).is_err() {
                     error!("cannot rename tmp save file");
@@ -390,4 +397,28 @@ fn update_menu(
             }
         }
     }
+}
+
+pub(crate) fn save_file<P, T>(filepath: P, _version: u32, data: &T) -> Result<Vec<u8>, Error>
+where
+    T: Serialize,
+    P: AsRef<Path>,
+{
+    let mut buf = vec![];
+    data.serialize(&mut Serializer::new(&mut buf)).unwrap();
+    fs::File::create(filepath).and_then(|mut file| file.write(&buf))?;
+    Ok(buf)
+}
+
+pub(crate) fn load_file<'a, P, T>(filepath: P, _version: u32) -> anyhow::Result<T>
+where
+    T: Deserialize<'a>,
+    P: AsRef<Path>,
+{
+    let buf = fs::read(filepath)?;
+
+    let cur = Cursor::new(buf.as_slice());
+    let mut de = Deserializer::new(cur);
+
+    Ok(Deserialize::deserialize(&mut de)?)
 }

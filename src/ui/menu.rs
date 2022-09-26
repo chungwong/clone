@@ -4,12 +4,18 @@ use bevy::{
     app::AppExit, hierarchy::ChildBuilder, prelude::*, tasks::IoTaskPool, window::close_on_esc,
 };
 
+use serde::{Deserialize, Serialize};
+
 use crate::{
     asset::FontAssets,
-    input::{MenuAction, MenuActionState},
+    input::{UiAction, UiActionState},
     physics::{pause_physics, resume_physics, RapierConfiguration},
+    save::{load_file, save_file},
     state::*,
-    ui::options::{AudioConfig, OptionPlugin},
+    ui::{
+        control::ControlConfig,
+        options::{AudioConfig, OptionPlugin},
+    },
 };
 
 pub(crate) const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);
@@ -126,17 +132,17 @@ impl BackButton {
 #[derive(Component, Debug)]
 pub(crate) struct SelectedOption;
 
-#[derive(Clone, Copy, Debug, Default, Resource, Savefile)]
+#[derive(Clone, Debug, Default, Resource, Deserialize, Serialize)]
 pub(crate) struct GameConfig {
     pub(crate) audio: AudioConfig,
+    pub(crate) control: ControlConfig,
 }
 
 impl GameConfig {
     fn load(mut cmd: Commands) {
-        if let Ok(config) = savefile::load_file::<GameConfig, _>(
-            Path::new(&format!("{CONFIG_DIR}/{CONFIG_FILENAME}")),
-            0,
-        ) {
+        if let Ok(config) =
+            load_file::<_, GameConfig>(Path::new(&format!("{CONFIG_DIR}/{CONFIG_FILENAME}")), 0)
+        {
             info!("loaded save data {:?}", &config);
             cmd.insert_resource(config);
         } else {
@@ -145,7 +151,7 @@ impl GameConfig {
     }
 
     fn save(game_config: Res<GameConfig>) {
-        let game_config = *game_config;
+        let game_config = game_config.clone();
 
         IoTaskPool::get()
             .spawn(async move {
@@ -156,8 +162,7 @@ impl GameConfig {
 
                 let tmp_file = format!("{}_tmp", config_file.display());
 
-                savefile::save_file(&tmp_file, 0, &game_config)
-                    .expect("Error while saving config file");
+                save_file(&tmp_file, 0, &game_config).expect("Error while saving config file");
 
                 if fs::rename(tmp_file, config_file).is_err() {
                     error!("cannot rename tmp config file");
@@ -403,10 +408,10 @@ fn on_esc_pause_menu(keys: Res<Input<KeyCode>>) -> bool {
 fn pause(
     mut rapier_config: ResMut<RapierConfiguration>,
     mut cmd: Commands,
-    input: Query<&MenuActionState>,
+    input: Query<&UiActionState>,
 ) {
     let input = input.single();
-    if input.just_pressed(MenuAction::Pause) {
+    if input.just_pressed(UiAction::Pause) {
         pause_physics(&mut rapier_config);
         cmd.insert_resource(NextState(PauseState::On));
     }

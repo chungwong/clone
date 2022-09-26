@@ -4,7 +4,7 @@ use bevy::prelude::*;
 
 use crate::{
     asset::ImageAssets,
-    input::{PlayerAction, PlayerActionState},
+    input::{ControlAction, ControlActionState, ControlInputManagerBundle, ControlInputMap},
     physics::*,
     save::CurrentSave,
     tilemap::{check_point::LastCheckPoint, EntityInstance, LevelSelection, LevelSize},
@@ -28,13 +28,13 @@ pub(crate) fn check_standing(
     }
 }
 
-pub(crate) fn set_facing_direction(mut query: Query<(&mut Player, &PlayerActionState)>) {
+pub(crate) fn set_facing_direction(mut query: Query<(&mut Player, &ControlActionState)>) {
     for (mut player, action_state) in query.iter_mut() {
-        if action_state.pressed(PlayerAction::Left)
+        if action_state.pressed(ControlAction::Left)
             && !matches!(player.facing_direction, Direction::Left)
         {
             player.facing_direction = Direction::Left;
-        } else if action_state.pressed(PlayerAction::Right)
+        } else if action_state.pressed(ControlAction::Right)
             && !matches!(player.facing_direction, Direction::Right)
         {
             player.facing_direction = Direction::Right;
@@ -50,7 +50,7 @@ pub(crate) fn dash(
         &mut Velocity,
         &mut GravityScale,
         &mut Player,
-        &PlayerActionState,
+        &ControlActionState,
     )>,
     rapier_context: Res<RapierContext>,
     player_movement_settings: Res<PlayerMovementSettings>,
@@ -58,9 +58,9 @@ pub(crate) fn dash(
     for (player_entity, mut velocity, mut gravity_scale, mut player, action_state) in
         query.iter_mut()
     {
-        let dir = if action_state.just_pressed(PlayerAction::Left) {
+        let dir = if action_state.just_pressed(ControlAction::Left) {
             Direction::Left
-        } else if action_state.just_pressed(PlayerAction::Right) {
+        } else if action_state.just_pressed(ControlAction::Right) {
             Direction::Right
         } else {
             Direction::Neutral
@@ -150,7 +150,7 @@ pub(crate) fn get_standing_normal(
 }
 pub(crate) fn jump(
     time: Res<Time>,
-    mut query: Query<(Entity, &mut Velocity, &mut Player, &PlayerActionState)>,
+    mut query: Query<(Entity, &mut Velocity, &mut Player, &ControlActionState)>,
     player_movement_settings: Res<PlayerMovementSettings>,
     rapier_context: Res<RapierContext>,
     rapier_config: Res<RapierConfiguration>,
@@ -161,7 +161,7 @@ pub(crate) fn jump(
     // let jump_impulse = player_movement_settings.jump_impulse / SCALE.powf(2.0);
 
     for (player_entity, mut velocity, mut player, action_state) in query.iter_mut() {
-        let pressed_jump = action_state.pressed(PlayerAction::Jump);
+        let pressed_jump = action_state.pressed(ControlAction::Jump);
 
         // find a normal of the standing ground where the player stands on
         let mut standing_normal = get_standing_normal(&rapier_context, &player_entity);
@@ -201,10 +201,10 @@ pub(crate) fn jump(
                 // // wall grab and slide
                 if normal.x.abs() == 1.0
                     && normal.y == 0.0
-                    && (action_state.pressed(PlayerAction::Right)
-                        || action_state.pressed(PlayerAction::Left))
+                    && (action_state.pressed(ControlAction::Right)
+                        || action_state.pressed(ControlAction::Left))
                 {
-                    if action_state.just_pressed(PlayerAction::Jump) {
+                    if action_state.just_pressed(ControlAction::Jump) {
                         return JumpStatus::InitiateJump;
                     }
                     return JumpStatus::WallSliding;
@@ -276,13 +276,13 @@ pub(crate) fn jump(
 }
 pub(crate) fn run(
     time: Res<Time>,
-    mut query: Query<(&mut Velocity, &PlayerActionState), With<Player>>,
+    mut query: Query<(&mut Velocity, &ControlActionState), With<Player>>,
     player_movement_settings: Res<PlayerMovementSettings>,
 ) {
     for (mut velocity, action_state) in query.iter_mut() {
-        let target_speed: f32 = if action_state.pressed(PlayerAction::Left) {
+        let target_speed: f32 = if action_state.pressed(ControlAction::Left) {
             -1.0
-        } else if action_state.pressed(PlayerAction::Right) {
+        } else if action_state.pressed(ControlAction::Right) {
             1.0
         } else {
             0.0
@@ -318,10 +318,15 @@ pub(crate) fn boundary(
 
 pub(crate) fn attack(
     mut cmd: Commands,
-    mut players: Query<(&Transform, &PlayerActionState, &Player, &mut WeaponCooldown)>,
+    mut players: Query<(
+        &Transform,
+        &ControlActionState,
+        &Player,
+        &mut WeaponCooldown,
+    )>,
 ) {
     for (transform, action_state, player, mut cooldown) in players.iter_mut() {
-        if action_state.pressed(PlayerAction::Attack) && cooldown.finished() {
+        if action_state.pressed(ControlAction::Attack) && cooldown.finished() {
             spawn_projectile(&mut cmd, &transform.translation, player);
             cooldown.reset();
         }
@@ -373,6 +378,7 @@ pub(crate) fn spawn_player(
     entity_query: Query<(Entity, &Transform, &EntityInstance), Added<EntityInstance>>,
     image_assets: Res<ImageAssets>,
     current_save: Res<CurrentSave>,
+    control_input_map: Res<ControlInputMap>,
 ) {
     for (entity, transform, entity_instance) in entity_query.iter() {
         if entity_instance.identifier == *"Player" {
@@ -406,6 +412,8 @@ pub(crate) fn spawn_player(
                     ..default()
                 },
                 entity_instance: entity_instance.clone(),
+                input_manager: ControlInputManagerBundle::default()
+                    .with_input_map(control_input_map.clone()),
                 hp,
                 ..default()
             });

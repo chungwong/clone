@@ -1,13 +1,27 @@
 use bevy::prelude::*;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     asset::FontAssets,
     state::{AppLooplessStateExt, ConditionSet, GameState, IntoConditionalSystem, NextState},
-    ui::menu::{
-        button_interact, get_button_style, on_esc_main_menu, BackButton, GameConfig,
-        GameConfigSaveEvent, SelectedOption, NORMAL_BUTTON, TEXT_COLOR,
+    ui::{
+        control::{ControlButton, ControlPlugin},
+        menu::{
+            button_interact, get_button_style, on_esc_main_menu, BackButton, GameConfig,
+            GameConfigSaveEvent, SelectedOption, NORMAL_BUTTON, TEXT_COLOR,
+        },
     },
 };
+
+// impl Default for AudioConfig {
+//     fn default() -> Self {
+//         Self {
+//             master_volume: MasterVolume(0.5),
+//             music_volume: MusicVolume(0.5),
+//             sound_volume: SoundVolume(0.5),
+//         }
+//     }
+// }
 
 #[derive(Component)]
 struct AudioButton;
@@ -18,7 +32,7 @@ impl AudioButton {
     }
 }
 
-#[derive(Clone, Copy, Debug, Savefile)]
+#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
 pub(crate) struct AudioConfig {
     pub(crate) master_volume: MasterVolume,
     pub(crate) music_volume: MusicVolume,
@@ -35,38 +49,38 @@ impl Default for AudioConfig {
     }
 }
 
-trait Volume {
+pub(crate) trait ConfigButton {
     fn save(&self, _: &mut ResMut<GameConfig>);
 }
 
-#[derive(Clone, Copy, Component, Debug, Deref, DerefMut, PartialEq, Savefile)]
+#[derive(Clone, Copy, Component, Debug, Deref, DerefMut, PartialEq, Deserialize, Serialize)]
 pub(crate) struct MasterVolume(pub(crate) f64);
 
-impl Volume for MasterVolume {
+impl ConfigButton for MasterVolume {
     fn save(&self, game_config: &mut ResMut<GameConfig>) {
         game_config.audio.master_volume = *self;
     }
 }
 
-#[derive(Clone, Copy, Component, Debug, Deref, DerefMut, PartialEq, Savefile)]
+#[derive(Clone, Copy, Component, Debug, Deref, DerefMut, PartialEq, Deserialize, Serialize)]
 pub(crate) struct MusicVolume(pub(crate) f64);
 
-impl Volume for MusicVolume {
+impl ConfigButton for MusicVolume {
     fn save(&self, game_config: &mut ResMut<GameConfig>) {
         game_config.audio.music_volume = *self;
     }
 }
 
-#[derive(Clone, Copy, Component, Debug, Deref, DerefMut, PartialEq, Savefile)]
+#[derive(Clone, Copy, Component, Debug, Deref, DerefMut, PartialEq, Deserialize, Serialize)]
 pub(crate) struct SoundVolume(pub(crate) f64);
 
-impl Volume for SoundVolume {
+impl ConfigButton for SoundVolume {
     fn save(&self, game_config: &mut ResMut<GameConfig>) {
         game_config.audio.sound_volume = *self;
     }
 }
 
-fn setting_button<T: Component + PartialEq + Volume>(
+fn select_button<T: Component + PartialEq + ConfigButton>(
     interaction_query: Query<
         (&Interaction, &T, Entity),
         (Changed<Interaction>, With<Button>, With<T>),
@@ -91,11 +105,12 @@ fn setting_button<T: Component + PartialEq + Volume>(
     }
 }
 
-pub struct OptionPlugin;
+pub(crate) struct OptionPlugin;
 
 impl Plugin for OptionPlugin {
     fn build(&self, app: &mut App) {
-        app.add_enter_system(GameState::OptionMenu, option_menu)
+        app.add_plugin(ControlPlugin)
+            .add_enter_system(GameState::OptionMenu, option_menu)
             .add_system_set(
                 ConditionSet::new()
                     .run_in_state(GameState::OptionMenu)
@@ -110,9 +125,9 @@ impl Plugin for OptionPlugin {
                     .run_in_state(GameState::AudioMenu)
                     .with_system(BackButton::to_option_menu.run_if(button_interact::<BackButton>))
                     .with_system(AudioButton::show.run_if(button_interact::<AudioButton>))
-                    .with_system(setting_button::<MasterVolume>)
-                    .with_system(setting_button::<SoundVolume>)
-                    .with_system(setting_button::<MusicVolume>)
+                    .with_system(select_button::<MasterVolume>)
+                    .with_system(select_button::<SoundVolume>)
+                    .with_system(select_button::<MusicVolume>)
                     .with_system(on_esc_main_menu)
                     .into(),
             );
@@ -192,6 +207,33 @@ fn option_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
                     .with_children(|parent| {
                         parent.spawn(TextBundle::from_sections([TextSection::new(
                             "Audio",
+                            button_text_style.clone(),
+                        )]));
+                    });
+            });
+
+        parent
+            .spawn(NodeBundle {
+                style: Style {
+                    margin: UiRect::all(Val::Auto),
+                    flex_direction: FlexDirection::Column,
+                    align_items: AlignItems::Center,
+                    ..default()
+                },
+                background_color: Color::CRIMSON.into(),
+                ..default()
+            })
+            .with_children(|parent| {
+                parent
+                    .spawn(ButtonBundle {
+                        style: button_style.clone(),
+                        background_color: NORMAL_BUTTON.into(),
+                        ..default()
+                    })
+                    .insert(ControlButton)
+                    .with_children(|parent| {
+                        parent.spawn(TextBundle::from_sections([TextSection::new(
+                            "Controls",
                             button_text_style.clone(),
                         )]));
                     });

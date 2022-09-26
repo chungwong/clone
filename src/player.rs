@@ -5,10 +5,12 @@ use std::time::Duration;
 
 use bevy::{prelude::*, utils::Instant};
 
+use serde::{Deserialize, Serialize};
+
 use move_vis::TrackMovement;
 
 use crate::{
-    input::PlayerInputManagerBundle,
+    input::ControlInputManagerBundle,
     physics::*,
     state::{ConditionSet, GameState, PauseState},
     tilemap::{EntityInstance, FieldValue, Worldly},
@@ -27,7 +29,7 @@ const TIME_TO_APEX: f32 = 0.4;
 
 const DEFAULT_GRAVITY_SCALE: f32 = 5.0;
 
-#[derive(Clone, Component, Copy, Debug, Default, Reflect, Savefile)]
+#[derive(Clone, Component, Copy, Debug, Default, Reflect, Deserialize, Serialize)]
 #[reflect(Component)]
 pub(crate) struct Health {
     pub(crate) current: u32,
@@ -196,7 +198,7 @@ pub(crate) struct PlayerBundle {
     pub(crate) sprite_bundle: SpriteBundle,
 
     #[bundle]
-    input_manager: PlayerInputManagerBundle,
+    input_manager: ControlInputManagerBundle,
 
     #[bundle]
     pub(crate) player_physics_bundle: PlayerPhysicsBundle,
