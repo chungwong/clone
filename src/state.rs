@@ -5,7 +5,7 @@ use global_state::{AddGlobalState, GlobalState};
 pub(crate) use iyes_loopless::prelude::*;
 
 // GlobalState will despawn all compoents on state exit, unless they are marked with Persistent
-#[derive(Clone, Copy, Debug, Eq, Hash, GlobalState, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, GlobalState, PartialEq, Resource)]
 pub(crate) enum GameState {
     AudioMenu,
     InGame,
@@ -33,7 +33,7 @@ impl Default for GameState {
                 "SaveMenu" => Self::SaveMenu,
                 "Splash" => Self::Splash,
                 "SplashAssetLoading" => Self::SplashAssetLoading,
-                _ => panic!("unrecognised game state {}", state),
+                _ => panic!("unrecognised game state {state}"),
             }
         } else {
             Self::SplashAssetLoading

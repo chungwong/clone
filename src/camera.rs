@@ -43,7 +43,7 @@ impl Plugin for CameraPlugin {
 }
 
 fn setup(mut cmd: Commands) {
-    cmd.spawn_bundle(MenuInputManagerBundle::default())
+    cmd.spawn(MenuInputManagerBundle::default())
         .insert(Persistent);
 }
 

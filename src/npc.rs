@@ -51,7 +51,7 @@ impl Enemy {
                     })
                     .expect("Mobs layer is not found in Ldtk file");
 
-                cmd.entity(entity).insert_bundle(MobBundle {
+                cmd.entity(entity).insert(MobBundle {
                     sprite_bundle: SpriteBundle {
                         sprite: Sprite {
                             color: Color::RED,

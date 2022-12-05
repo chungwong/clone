@@ -13,7 +13,7 @@ use crate::{
 pub(crate) mod check_point;
 use check_point::CheckPointPlugin;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Resource)]
 pub(crate) struct LevelSize(pub Option<Vec2>);
 
 pub struct TilemapPlugin;
@@ -49,11 +49,9 @@ impl Plugin for TilemapPlugin {
 }
 
 fn setup(mut cmd: Commands, asset_server: Res<AssetServer>) {
-    cmd.spawn_bundle(Camera2dBundle::default());
+    cmd.spawn(Camera2dBundle::default());
 
-    asset_server.watch_for_changes().unwrap();
-
-    cmd.spawn_bundle(LdtkWorldBundle {
+    cmd.spawn(LdtkWorldBundle {
         ldtk_handle: asset_server.load("levels/reckoning.ldtk"),
         ..default()
     });
@@ -96,10 +94,16 @@ struct Plate {
     right: i32,
 }
 
-pub(crate) fn merge_grids(
-    layer: &LayerInstance,
-    grid_coords: &HashSet<GridCoords>,
-) -> Vec<UiRect<i32>> {
+/// A simple rectangle type representing a wall of any size
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Hash)]
+pub(crate) struct Rect {
+    left: i32,
+    right: i32,
+    top: i32,
+    bottom: i32,
+}
+
+pub(crate) fn merge_grids(layer: &LayerInstance, grid_coords: &HashSet<GridCoords>) -> Vec<Rect> {
     let LayerInstance {
         c_wid: width,
         c_hei: height,
@@ -133,20 +137,20 @@ pub(crate) fn merge_grids(
     }
 
     // combine "plates" into rectangles across multiple rows
-    let mut rects: Vec<UiRect<i32>> = Vec::new();
-    let mut previous_rects: HashMap<Plate, UiRect<i32>> = HashMap::new();
+    let mut rects: Vec<Rect> = Vec::new();
+    let mut previous_rects: HashMap<Plate, Rect> = HashMap::new();
 
     // an extra empty row so the algorithm "terminates" the rects that touch the top
     // edge
     plate_stack.push(Vec::new());
 
     for (y, row) in plate_stack.iter().enumerate() {
-        let mut current_rects: HashMap<Plate, UiRect<i32>> = HashMap::new();
+        let mut current_rects: HashMap<Plate, Rect> = HashMap::new();
         for plate in row {
             if let Some(previous_rect) = previous_rects.remove(plate) {
                 current_rects.insert(
                     *plate,
-                    UiRect {
+                    Rect {
                         top: previous_rect.top + 1,
                         ..previous_rect
                     },
@@ -154,7 +158,7 @@ pub(crate) fn merge_grids(
             } else {
                 current_rects.insert(
                     *plate,
-                    UiRect {
+                    Rect {
                         bottom: y as i32,
                         top: y as i32,
                         left: plate.left,
@@ -231,24 +235,27 @@ pub(crate) fn spawn_wall_collision(
                 // spawn colliders for every rectangle
                 for merged_grid in merge_grids(&layer, wall_grid_coords) {
                     let child_entity = commands
-                        .spawn()
-                        .insert(Name::new("Wall"))
-                        .insert(Collider::cuboid(
-                            (merged_grid.right as f32 - merged_grid.left as f32 + 1.)
-                                * grid_size as f32
-                                / 2.,
-                            (merged_grid.top as f32 - merged_grid.bottom as f32 + 1.)
-                                * grid_size as f32
-                                / 2.,
+                        .spawn((
+                            Name::new("Wall"),
+                            Collider::cuboid(
+                                (merged_grid.right - merged_grid.left + 1) as f32
+                                    * grid_size as f32
+                                    / 2.,
+                                (merged_grid.top - merged_grid.bottom + 1) as f32
+                                    * grid_size as f32
+                                    / 2.,
+                            ),
+                            RigidBody::Fixed,
+                            TransformBundle::from(Transform::from_xyz(
+                                (merged_grid.left + merged_grid.right + 1) as f32
+                                    * grid_size as f32
+                                    / 2.,
+                                (merged_grid.bottom + merged_grid.top + 1) as f32
+                                    * grid_size as f32
+                                    / 2.,
+                                0.,
+                            )),
                         ))
-                        .insert(RigidBody::Fixed)
-                        .insert_bundle(TransformBundle::from(Transform::from_xyz(
-                            (merged_grid.left + merged_grid.right + 1) as f32 * grid_size as f32
-                                / 2.,
-                            (merged_grid.bottom + merged_grid.top + 1) as f32 * grid_size as f32
-                                / 2.,
-                            0.,
-                        )))
                         .id();
 
                     // Making the collider a child of the level serves two purposes:

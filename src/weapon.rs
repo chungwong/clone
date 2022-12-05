@@ -15,7 +15,7 @@ impl WeaponCooldown {
     fn new() -> Self {
         let duration = Duration::from_secs_f32(0.2);
 
-        let mut timer = Timer::new(duration, false);
+        let mut timer = Timer::new(duration, TimerMode::Once);
         timer.tick(duration);
 
         Self(timer)
@@ -105,27 +105,26 @@ pub(crate) fn spawn_projectile(cmd: &mut Commands, translation: &Vec3, player: &
     let dir = player.facing_direction.to_f32();
     let offset = Vec3::new(10.0 * dir, 0.0, 0.0);
 
-    cmd.spawn()
-        .insert_bundle(SpriteBundle {
+    cmd.spawn((
+        SpriteBundle {
             transform: Transform::from_translation(*translation + offset),
             ..default()
-        })
-        .insert(RigidBody::KinematicVelocityBased)
-        .insert(Sensor)
-        .insert(Collider::ball(1.0))
-        .insert(Velocity {
+        },
+        RigidBody::KinematicVelocityBased,
+        Sensor,
+        Collider::ball(1.0),
+        Velocity {
             linvel: Vec2::new(300.0 * dir, 0.0),
             ..default()
-        })
-        .insert(GravityScale(0.0))
-        .insert(Ccd::enabled())
-        .insert(ActiveEvents::COLLISION_EVENTS)
-        .insert(
-            ActiveCollisionTypes::DYNAMIC_KINEMATIC
-                | ActiveCollisionTypes::KINEMATIC_KINEMATIC
-                | ActiveCollisionTypes::KINEMATIC_STATIC,
-        )
-        .insert(CollidingEntities::default())
-        .insert(Offscreen::default())
-        .insert(Projectile::new(1, None, translation.truncate()));
+        },
+        GravityScale(0.0),
+        Ccd::enabled(),
+        ActiveEvents::COLLISION_EVENTS,
+        ActiveCollisionTypes::DYNAMIC_KINEMATIC
+            | ActiveCollisionTypes::KINEMATIC_KINEMATIC
+            | ActiveCollisionTypes::KINEMATIC_STATIC,
+        CollidingEntities::default(),
+        Offscreen::default(),
+        Projectile::new(1, None, translation.truncate()),
+    ));
 }

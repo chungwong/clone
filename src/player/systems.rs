@@ -382,7 +382,7 @@ pub(crate) fn spawn_player(
                 entity_instance.into()
             };
 
-            cmd.entity(entity).insert_bundle(PlayerBundle {
+            cmd.entity(entity).insert(PlayerBundle {
                 sprite_bundle: SpriteBundle {
                     texture: image_assets.player.clone(),
                     transform: *transform,

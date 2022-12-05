@@ -71,7 +71,7 @@ fn setting_button<T: Component + PartialEq + Volume>(
         (&Interaction, &T, Entity),
         (Changed<Interaction>, With<Button>, With<T>),
     >,
-    mut selected_query: Query<(Entity, &mut UiColor), (With<SelectedOption>, With<T>)>,
+    mut selected_query: Query<(Entity, &mut BackgroundColor), (With<SelectedOption>, With<T>)>,
     mut cmd: Commands,
     mut config_save_event: EventWriter<GameConfigSaveEvent>,
     mut game_config: ResMut<GameConfig>,
@@ -120,7 +120,7 @@ impl Plugin for OptionPlugin {
 }
 
 fn option_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
-    cmd.spawn_bundle(Camera2dBundle::default());
+    cmd.spawn(Camera2dBundle::default());
     let font = font_assets.monogram.clone();
 
     let button_style = get_button_style();
@@ -131,29 +131,29 @@ fn option_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
         color: TEXT_COLOR,
     };
 
-    cmd.spawn_bundle(NodeBundle {
+    cmd.spawn(NodeBundle {
         style: Style {
             margin: UiRect::all(Val::Auto),
-            flex_direction: FlexDirection::ColumnReverse,
+            flex_direction: FlexDirection::Column,
             ..default()
         },
-        color: Color::CRIMSON.into(),
+        background_color: Color::CRIMSON.into(),
         ..default()
     })
     .with_children(|parent| {
         parent
-            .spawn_bundle(NodeBundle {
+            .spawn(NodeBundle {
                 style: Style {
                     margin: UiRect::all(Val::Auto),
-                    flex_direction: FlexDirection::ColumnReverse,
+                    flex_direction: FlexDirection::Column,
                     align_items: AlignItems::Center,
                     ..default()
                 },
-                color: Color::CRIMSON.into(),
+                background_color: Color::CRIMSON.into(),
                 ..default()
             })
             .with_children(|parent| {
-                parent.spawn_bundle(TextBundle {
+                parent.spawn(TextBundle {
                     style: Style {
                         margin: UiRect::all(Val::Px(50.0)),
                         ..default()
@@ -171,26 +171,26 @@ fn option_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
             });
 
         parent
-            .spawn_bundle(NodeBundle {
+            .spawn(NodeBundle {
                 style: Style {
                     margin: UiRect::all(Val::Auto),
-                    flex_direction: FlexDirection::ColumnReverse,
+                    flex_direction: FlexDirection::Column,
                     align_items: AlignItems::Center,
                     ..default()
                 },
-                color: Color::CRIMSON.into(),
+                background_color: Color::CRIMSON.into(),
                 ..default()
             })
             .with_children(|parent| {
                 parent
-                    .spawn_bundle(ButtonBundle {
+                    .spawn(ButtonBundle {
                         style: button_style.clone(),
-                        color: NORMAL_BUTTON.into(),
+                        background_color: NORMAL_BUTTON.into(),
                         ..default()
                     })
                     .insert(AudioButton)
                     .with_children(|parent| {
-                        parent.spawn_bundle(TextBundle::from_sections([TextSection::new(
+                        parent.spawn(TextBundle::from_sections([TextSection::new(
                             "Audio",
                             button_text_style.clone(),
                         )]));
@@ -198,14 +198,14 @@ fn option_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
             });
 
         parent
-            .spawn_bundle(NodeBundle {
+            .spawn(NodeBundle {
                 style: Style {
                     margin: UiRect::all(Val::Auto),
-                    flex_direction: FlexDirection::ColumnReverse,
+                    flex_direction: FlexDirection::Column,
                     align_items: AlignItems::Center,
                     ..default()
                 },
-                color: Color::CRIMSON.into(),
+                background_color: Color::CRIMSON.into(),
                 ..default()
             })
             .with_children(|parent| {
@@ -215,7 +215,7 @@ fn option_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
 }
 
 fn audio_menu(mut cmd: Commands, game_config: Res<GameConfig>, font_assets: Res<FontAssets>) {
-    cmd.spawn_bundle(Camera2dBundle::default());
+    cmd.spawn(Camera2dBundle::default());
 
     let audio_config = &game_config.audio;
 
@@ -229,30 +229,30 @@ fn audio_menu(mut cmd: Commands, game_config: Res<GameConfig>, font_assets: Res<
         color: TEXT_COLOR,
     };
 
-    cmd.spawn_bundle(NodeBundle {
+    cmd.spawn(NodeBundle {
         style: Style {
             margin: UiRect::all(Val::Auto),
-            flex_direction: FlexDirection::ColumnReverse,
+            flex_direction: FlexDirection::Column,
             align_items: AlignItems::Center,
             ..default()
         },
-        color: Color::CRIMSON.into(),
+        background_color: Color::CRIMSON.into(),
         ..default()
     })
     .with_children(|parent| {
         parent
-            .spawn_bundle(NodeBundle {
+            .spawn(NodeBundle {
                 style: Style {
                     margin: UiRect::all(Val::Auto),
-                    flex_direction: FlexDirection::ColumnReverse,
+                    flex_direction: FlexDirection::Column,
                     align_items: AlignItems::Center,
                     ..default()
                 },
-                color: Color::CRIMSON.into(),
+                background_color: Color::CRIMSON.into(),
                 ..default()
             })
             .with_children(|parent| {
-                parent.spawn_bundle(TextBundle {
+                parent.spawn(TextBundle {
                     style: Style {
                         margin: UiRect::all(Val::Px(50.0)),
                         ..default()
@@ -269,26 +269,26 @@ fn audio_menu(mut cmd: Commands, game_config: Res<GameConfig>, font_assets: Res<
                 });
             });
         parent
-            .spawn_bundle(NodeBundle {
+            .spawn(NodeBundle {
                 style: Style {
                     align_items: AlignItems::Center,
                     ..default()
                 },
-                color: Color::CRIMSON.into(),
+                background_color: Color::CRIMSON.into(),
                 ..default()
             })
             .with_children(|parent| {
-                parent.spawn_bundle(TextBundle::from_section(
+                parent.spawn(TextBundle::from_section(
                     "Master Volume",
                     button_text_style.clone(),
                 ));
                 for volume_setting in [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0] {
-                    let mut entity = parent.spawn_bundle(ButtonBundle {
+                    let mut entity = parent.spawn(ButtonBundle {
                         style: Style {
                             size: Size::new(Val::Px(30.0), Val::Px(65.0)),
                             ..button_style.clone()
                         },
-                        color: NORMAL_BUTTON.into(),
+                        background_color: NORMAL_BUTTON.into(),
                         ..default()
                     });
                     entity.insert(MasterVolume(volume_setting));
@@ -298,26 +298,26 @@ fn audio_menu(mut cmd: Commands, game_config: Res<GameConfig>, font_assets: Res<
                 }
             });
         parent
-            .spawn_bundle(NodeBundle {
+            .spawn(NodeBundle {
                 style: Style {
                     align_items: AlignItems::Center,
                     ..default()
                 },
-                color: Color::CRIMSON.into(),
+                background_color: Color::CRIMSON.into(),
                 ..default()
             })
             .with_children(|parent| {
-                parent.spawn_bundle(TextBundle::from_section(
+                parent.spawn(TextBundle::from_section(
                     "Music Volume",
                     button_text_style.clone(),
                 ));
                 for volume_setting in [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0] {
-                    let mut entity = parent.spawn_bundle(ButtonBundle {
+                    let mut entity = parent.spawn(ButtonBundle {
                         style: Style {
                             size: Size::new(Val::Px(30.0), Val::Px(65.0)),
                             ..button_style.clone()
                         },
-                        color: NORMAL_BUTTON.into(),
+                        background_color: NORMAL_BUTTON.into(),
                         ..default()
                     });
                     entity.insert(MusicVolume(volume_setting));
@@ -327,26 +327,26 @@ fn audio_menu(mut cmd: Commands, game_config: Res<GameConfig>, font_assets: Res<
                 }
             });
         parent
-            .spawn_bundle(NodeBundle {
+            .spawn(NodeBundle {
                 style: Style {
                     align_items: AlignItems::Center,
                     ..default()
                 },
-                color: Color::CRIMSON.into(),
+                background_color: Color::CRIMSON.into(),
                 ..default()
             })
             .with_children(|parent| {
-                parent.spawn_bundle(TextBundle::from_section(
+                parent.spawn(TextBundle::from_section(
                     "Sound Volume",
                     button_text_style.clone(),
                 ));
                 for volume_setting in [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0] {
-                    let mut entity = parent.spawn_bundle(ButtonBundle {
+                    let mut entity = parent.spawn(ButtonBundle {
                         style: Style {
                             size: Size::new(Val::Px(30.0), Val::Px(65.0)),
                             ..button_style.clone()
                         },
-                        color: NORMAL_BUTTON.into(),
+                        background_color: NORMAL_BUTTON.into(),
                         ..default()
                     });
                     entity.insert(SoundVolume(volume_setting));
@@ -357,14 +357,14 @@ fn audio_menu(mut cmd: Commands, game_config: Res<GameConfig>, font_assets: Res<
             });
 
         parent
-            .spawn_bundle(NodeBundle {
+            .spawn(NodeBundle {
                 style: Style {
                     margin: UiRect::all(Val::Auto),
-                    flex_direction: FlexDirection::ColumnReverse,
+                    flex_direction: FlexDirection::Column,
                     align_items: AlignItems::Center,
                     ..default()
                 },
-                color: Color::CRIMSON.into(),
+                background_color: Color::CRIMSON.into(),
                 ..default()
             })
             .with_children(|parent| {

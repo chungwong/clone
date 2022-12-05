@@ -49,14 +49,14 @@ impl From<&EntityInstance> for Health {
             .field_instances
             .iter()
             .find(|f| f.identifier == "HP")
-            .unwrap_or_else(|| panic!("HP not set for {:?}", entity_instance));
+            .unwrap_or_else(|| panic!("HP not set for {entity_instance:?}"));
 
         match field_instances.value {
             FieldValue::Int(Some(hp)) if hp > 0 => Self::new(hp as u32),
             FieldValue::Int(Some(hp)) if hp == 0 => {
-                panic!("{}", &format!("HP cannot be 0 {:?}", field_instances))
+                panic!("HP cannot be 0 {field_instances:?}")
             }
-            _ => panic!("{}", &format!("Wrong HP type {:?}", field_instances)),
+            _ => panic!("Wrong HP type {field_instances:?}"),
         }
     }
 }
@@ -105,6 +105,8 @@ impl TryFrom<f32> for Direction {
         }
     }
 }
+
+#[derive(Resource)]
 pub(crate) struct DashInput {
     input_timer: Timer,
     direction: Direction,
@@ -113,13 +115,13 @@ pub(crate) struct DashInput {
 impl Default for DashInput {
     fn default() -> Self {
         Self {
-            input_timer: Timer::new(Duration::from_millis(200), false),
+            input_timer: Timer::new(Duration::from_millis(200), TimerMode::Once),
             direction: Direction::Neutral,
         }
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Resource)]
 pub(crate) struct PlayerMovementSettings {
     // metre
     pub(crate) jump_height: f32,

@@ -6,25 +6,25 @@ use crate::{
     state::{AppLooplessStateExt, GameState},
 };
 
-#[derive(AssetCollection)]
+#[derive(AssetCollection, Resource)]
 pub(crate) struct MainMenuAssets {
     #[asset(key = "main_menu.bgm")]
     pub(crate) bgm: Handle<AudioSource>,
 }
 
-#[derive(AssetCollection)]
+#[derive(AssetCollection, Resource)]
 pub(crate) struct ImageAssets {
     #[asset(key = "image.player")]
     pub(crate) player: Handle<Image>,
 }
 
-#[derive(AssetCollection)]
+#[derive(AssetCollection, Resource)]
 pub(crate) struct AudioAssets {
     #[asset(key = "sounds.bgm")]
     pub(crate) bgm: Handle<AudioSource>,
 }
 
-#[derive(AssetCollection)]
+#[derive(AssetCollection, Resource)]
 pub(crate) struct FontAssets {
     #[asset(key = "font.monogram")]
     pub(crate) monogram: Handle<Font>,
@@ -67,11 +67,11 @@ impl Plugin for AssetPlugin {
 }
 
 fn loading_screen(mut cmd: Commands, asset_server: Res<AssetServer>) {
-    cmd.spawn_bundle(Camera2dBundle::default());
+    cmd.spawn(Camera2dBundle::default());
 
     let font = asset_server.load("fonts/monogram.ttf");
 
-    cmd.spawn_bundle(Text2dBundle {
+    cmd.spawn(Text2dBundle {
         text: Text::from_section(
             "Loading".to_owned(),
             TextStyle {
@@ -87,7 +87,7 @@ fn loading_screen(mut cmd: Commands, asset_server: Res<AssetServer>) {
         ..default()
     });
 
-    cmd.spawn_bundle(SpriteBundle {
+    cmd.spawn(SpriteBundle {
         sprite: Sprite {
             custom_size: Vec2::new(160., 12.).into(),
             color: Color::BLACK,
@@ -97,7 +97,7 @@ fn loading_screen(mut cmd: Commands, asset_server: Res<AssetServer>) {
     })
     .insert(Transform::from_xyz(0., -70., 0.));
 
-    cmd.spawn_bundle(SpriteBundle {
+    cmd.spawn(SpriteBundle {
         sprite: Sprite {
             custom_size: Vec2::new(160., 12.).into(),
             color: Color::WHITE,

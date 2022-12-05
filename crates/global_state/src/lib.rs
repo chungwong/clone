@@ -23,10 +23,10 @@ impl AddGlobalState for App {
 #[derive(Component)]
 pub struct Persistent;
 
-#[derive(Default)]
+#[derive(Default, Resource)]
 pub struct StateTime<T>
 where
-    T: Resource,
+    T: Resource + ?Sized,
 {
     pub time: f32,
     _phantom: PhantomData<T>,
@@ -34,7 +34,7 @@ where
 
 impl<T> StateTime<T>
 where
-    T: Resource,
+    T: Resource + ?Sized,
 {
     pub fn just_entered(&self) -> bool {
         self.time < 0.1
@@ -43,14 +43,14 @@ where
 
 pub fn reset_state_time<T>(mut state_time: ResMut<StateTime<T>>)
 where
-    T: Resource,
+    T: Resource + ?Sized,
 {
     state_time.time = 0.;
 }
 
 pub fn update_state_time<T>(mut state_time: ResMut<StateTime<T>>, time: Res<Time>)
 where
-    T: Resource,
+    T: Resource + ?Sized,
 {
     state_time.time += time.delta_seconds();
 }

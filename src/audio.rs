@@ -15,6 +15,7 @@ use crate::{
 
 trait Channel = Sync + Send + Resource;
 
+#[derive(Resource)]
 pub(crate) struct ChannelState<T> {
     pub(crate) handle: Option<Handle<AudioSource>>,
     pub(crate) instance_handle: Option<Handle<AudioInstance>>,
@@ -48,10 +49,10 @@ impl<T> Default for ChannelState<T> {
     }
 }
 
-#[derive(Component, Debug, Default, Clone)]
+#[derive(Component, Debug, Default, Clone, Resource)]
 pub(crate) struct MusicChannel;
 
-#[derive(Component, Debug, Default, Clone)]
+#[derive(Component, Debug, Default, Clone, Resource)]
 pub(crate) struct EffectsChannel;
 
 pub struct AudioPlugin;

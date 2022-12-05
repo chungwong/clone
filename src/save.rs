@@ -4,10 +4,7 @@ use std::{fs, path::PathBuf};
 use crate::{
     asset::FontAssets,
     player::{Health, Player},
-    state::{
-        AppLooplessStateExt, ConditionHelpers, ConditionSet, GameState, IntoConditionalSystem,
-        NextState,
-    },
+    state::{AppLooplessStateExt, ConditionSet, GameState, IntoConditionalSystem, NextState},
     ui::menu::{button_interact, get_button_style, on_esc, BackButton, NORMAL_BUTTON, TEXT_COLOR},
 };
 
@@ -157,7 +154,7 @@ impl SaveSlots {
     }
 }
 
-#[derive(Debug, Default, Deref, DerefMut)]
+#[derive(Debug, Default, Deref, DerefMut, Resource)]
 pub(crate) struct CurrentSave(pub(crate) Save);
 
 pub struct SavePlugin;
@@ -181,13 +178,11 @@ impl Plugin for SavePlugin {
                     .with_system(on_esc)
                     .into(),
             )
-            .add_system(
-                iyes_loopless::condition::IntoConditionalExclusiveSystem::run_in_state(
-                    save_system,
-                    GameState::InGame,
-                )
-                .run_if(on_save_event)
-                .at_end(),
+            .add_system_set(
+                ConditionSet::new()
+                    .run_in_state(GameState::InGame)
+                    .with_system(save_system.run_if(on_save_event))
+                    .into(),
             );
     }
 }
@@ -233,7 +228,7 @@ fn save_system(world: &mut World) {
 }
 
 fn save_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
-    cmd.spawn_bundle(Camera2dBundle::default());
+    cmd.spawn(Camera2dBundle::default());
 
     let font = font_assets.monogram.clone();
 
@@ -245,45 +240,45 @@ fn save_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
         color: TEXT_COLOR,
     };
 
-    cmd.spawn_bundle(NodeBundle {
+    cmd.spawn(NodeBundle {
         style: Style {
             margin: UiRect::all(Val::Auto),
             flex_direction: FlexDirection::Row,
             ..default()
         },
-        color: Color::CRIMSON.into(),
+        background_color: Color::CRIMSON.into(),
         ..default()
     })
     .insert(DeleteMode(false))
     .with_children(|parent| {
         parent
-            .spawn_bundle(NodeBundle {
+            .spawn(NodeBundle {
                 style: Style {
                     margin: UiRect::all(Val::Auto),
-                    flex_direction: FlexDirection::ColumnReverse,
+                    flex_direction: FlexDirection::Column,
                     align_items: AlignItems::Center,
                     ..default()
                 },
-                color: Color::CRIMSON.into(),
+                background_color: Color::CRIMSON.into(),
                 ..default()
             })
             .with_children(|parent| {
                 SaveSlots::new(5).iter().for_each(|save| {
                     parent
-                        .spawn_bundle(NodeBundle {
+                        .spawn(NodeBundle {
                             style: Style {
                                 margin: UiRect::all(Val::Auto),
                                 flex_direction: FlexDirection::Row,
                                 align_items: AlignItems::Center,
                                 ..default()
                             },
-                            color: Color::CRIMSON.into(),
+                            background_color: Color::CRIMSON.into(),
                             ..default()
                         })
                         .with_children(|parent| {
-                            let mut button = parent.spawn_bundle(ButtonBundle {
+                            let mut button = parent.spawn(ButtonBundle {
                                 style: button_style.clone(),
-                                color: NORMAL_BUTTON.into(),
+                                background_color: NORMAL_BUTTON.into(),
                                 ..default()
                             });
 
@@ -294,7 +289,7 @@ fn save_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
                             };
 
                             button.with_children(|parent| {
-                                parent.spawn_bundle(TextBundle {
+                                parent.spawn(TextBundle {
                                     text: Text::from_section(
                                         save.filename.to_owned(),
                                         button_text_style.clone(),
@@ -312,24 +307,24 @@ fn save_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
 
         if !saves.is_empty() {
             parent
-                .spawn_bundle(NodeBundle {
+                .spawn(NodeBundle {
                     style: Style {
                         align_items: AlignItems::FlexEnd,
                         ..default()
                     },
-                    color: Color::CRIMSON.into(),
+                    background_color: Color::CRIMSON.into(),
                     ..default()
                 })
                 .with_children(|parent| {
                     parent
-                        .spawn_bundle(ButtonBundle {
-                            color: NORMAL_BUTTON.into(),
+                        .spawn(ButtonBundle {
+                            background_color: NORMAL_BUTTON.into(),
                             ..default()
                         })
                         .insert(DeleteModeButton)
                         .with_children(|parent| {
                             parent
-                                .spawn_bundle(TextBundle::from_sections([TextSection::new(
+                                .spawn(TextBundle::from_sections([TextSection::new(
                                     "Delete Save",
                                     TextStyle {
                                         font,
@@ -367,13 +362,13 @@ fn update_menu(
 
                 for (parent, save_button) in save_nodes.iter() {
                     let button_id = cmd
-                        .spawn_bundle(ButtonBundle {
-                            color: NORMAL_BUTTON.into(),
+                        .spawn(ButtonBundle {
+                            background_color: NORMAL_BUTTON.into(),
                             ..default()
                         })
                         .insert(DeleteButton(save_button.0.clone()))
                         .with_children(|parent| {
-                            parent.spawn_bundle(TextBundle {
+                            parent.spawn(TextBundle {
                                 text: Text::from_section("Delete?", button_text_style.clone()),
                                 ..default()
                             });

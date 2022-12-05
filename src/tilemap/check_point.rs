@@ -13,7 +13,7 @@ use super::{
     RegisterLdtkObjects,
 };
 
-#[derive(Component, Debug, Default)]
+#[derive(Component, Debug, Default, Resource)]
 pub(crate) struct LastCheckPoint {
     pub(crate) coordinate: Vec3,
     pub(crate) level: LevelSelection,
@@ -151,30 +151,31 @@ pub(crate) fn spawn_check_points(
                 // spawn colliders for every rectangle
                 for merged_grid in merge_grids(&layer, check_point_grid_coords) {
                     let child_entity = commands
-                        .spawn()
-                        .insert(Name::new("CheckPoint"))
-                        .insert(CheckPoint)
-                        .insert(ActiveEvents::COLLISION_EVENTS)
-                        .insert(ActiveCollisionTypes::DYNAMIC_STATIC)
-                        .insert(CollidingEntities::default())
-                        .insert(Sensor)
-                        .insert(Collider::cuboid(
-                            (merged_grid.right as f32 - merged_grid.left as f32 + 1.)
-                                * grid_size as f32
-                                / 2.,
-                            (merged_grid.top as f32 - merged_grid.bottom as f32 + 1.)
-                                * grid_size as f32
-                                / 2.,
+                        .spawn((
+                            Name::new("CheckPoint"),
+                            CheckPoint,
+                            ActiveEvents::COLLISION_EVENTS,
+                            ActiveCollisionTypes::DYNAMIC_STATIC,
+                            CollidingEntities::default(),
+                            Sensor,
+                            Collider::cuboid(
+                                (merged_grid.right - merged_grid.left + 1) as f32
+                                    * grid_size as f32
+                                    / 2.,
+                                (merged_grid.top - merged_grid.bottom + 1) as f32
+                                    * grid_size as f32
+                                    / 2.,
+                            ),
+                            GravityScale(0.0),
+                            RigidBody::Fixed,
+                            // TransformBundle::from(Transform::from_xyz(
+                            //     (merged_grid.left + merged_grid.right + 1) as f32 * grid_size as f32
+                            //         / 2.,
+                            //     (merged_grid.bottom + merged_grid.top + 1) as f32 * grid_size as f32
+                            //         / 2.,
+                            //     0.,
+                            // )),
                         ))
-                        .insert(GravityScale(0.0))
-                        .insert(RigidBody::Fixed)
-                        .insert_bundle(TransformBundle::from(Transform::from_xyz(
-                            (merged_grid.left + merged_grid.right + 1) as f32 * grid_size as f32
-                                / 2.,
-                            (merged_grid.bottom + merged_grid.top + 1) as f32 * grid_size as f32
-                                / 2.,
-                            0.,
-                        )))
                         .id();
                     commands.entity(level_entity).add_child(child_entity);
                 }

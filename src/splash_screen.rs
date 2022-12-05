@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{asset::FontAssets, state::*};
 
-#[derive(Deref, DerefMut)]
+#[derive(Deref, DerefMut, Resource)]
 struct SplashTimer(Timer);
 
 pub(crate) struct SplashScreenPlugin;
@@ -15,7 +15,7 @@ impl Plugin for SplashScreenPlugin {
 }
 
 fn splash_setup(mut cmd: Commands, font_assets: Res<FontAssets>) {
-    cmd.spawn_bundle(Camera2dBundle::default());
+    cmd.spawn(Camera2dBundle::default());
 
     let font = font_assets.monogram.clone();
 
@@ -30,12 +30,12 @@ fn splash_setup(mut cmd: Commands, font_assets: Res<FontAssets>) {
         horizontal: HorizontalAlign::Center,
     };
 
-    cmd.spawn_bundle(Text2dBundle {
+    cmd.spawn(Text2dBundle {
         text: Text::from_section("Splash Screen", text_style).with_alignment(text_alignment),
         ..default()
     });
 
-    cmd.insert_resource(SplashTimer(Timer::from_seconds(1.0, false)));
+    cmd.insert_resource(SplashTimer(Timer::from_seconds(1.0, TimerMode::Once)));
 }
 
 fn countdown(mut cmd: Commands, time: Res<Time>, mut timer: ResMut<SplashTimer>) {

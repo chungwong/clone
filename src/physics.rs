@@ -43,8 +43,8 @@ fn setup(
     mut rapier_config: ResMut<RapierConfiguration>,
     mut player_movement_settings: ResMut<PlayerMovementSettings>,
 ) {
-    set_gravity(&mut rapier_config, &*player_movement_settings);
-    set_jump_power_coefficient(&rapier_config, &mut *player_movement_settings);
+    set_gravity(&mut rapier_config, &player_movement_settings);
+    set_jump_power_coefficient(&rapier_config, &mut player_movement_settings);
 }
 
 /// what is the gravity that would allow jumping to a given height?
