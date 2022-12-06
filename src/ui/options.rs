@@ -4,8 +4,8 @@ use crate::{
     asset::FontAssets,
     state::{AppLooplessStateExt, ConditionSet, GameState, IntoConditionalSystem, NextState},
     ui::menu::{
-        button_interact, get_button_style, on_esc, BackButton, GameConfig, GameConfigSaveEvent,
-        SelectedOption, NORMAL_BUTTON, TEXT_COLOR,
+        button_interact, get_button_style, on_esc_main_menu, BackButton, GameConfig,
+        GameConfigSaveEvent, SelectedOption, NORMAL_BUTTON, TEXT_COLOR,
     },
 };
 
@@ -101,7 +101,7 @@ impl Plugin for OptionPlugin {
                     .run_in_state(GameState::OptionMenu)
                     .with_system(BackButton::to_main_menu.run_if(button_interact::<BackButton>))
                     .with_system(AudioButton::show.run_if(button_interact::<AudioButton>))
-                    .with_system(on_esc)
+                    .with_system(on_esc_main_menu)
                     .into(),
             )
             .add_enter_system(GameState::AudioMenu, audio_menu)
@@ -113,7 +113,7 @@ impl Plugin for OptionPlugin {
                     .with_system(setting_button::<MasterVolume>)
                     .with_system(setting_button::<SoundVolume>)
                     .with_system(setting_button::<MusicVolume>)
-                    .with_system(on_esc)
+                    .with_system(on_esc_main_menu)
                     .into(),
             );
     }

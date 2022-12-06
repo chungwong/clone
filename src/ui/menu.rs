@@ -6,6 +6,8 @@ use bevy::{
 
 use crate::{
     asset::FontAssets,
+    input::{MenuAction, MenuActionState},
+    physics::{pause_physics, resume_physics, RapierConfiguration},
     state::*,
     ui::options::{AudioConfig, OptionPlugin},
 };
@@ -19,6 +21,9 @@ pub(crate) const TEXT_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
 
 const CONFIG_DIR: &str = "data";
 const CONFIG_FILENAME: &str = "config.bin";
+
+#[derive(Component)]
+struct Despawnable;
 
 pub(crate) fn get_button_style() -> Style {
     Style {
@@ -76,8 +81,17 @@ impl StartGameButton {
 #[derive(Component)]
 struct ResumeButton;
 impl ResumeButton {
-    fn resume(mut cmd: Commands) {
-        cmd.insert_resource(NextState(GameState::InGame));
+    fn resume(mut rapier_config: ResMut<RapierConfiguration>, mut cmd: Commands) {
+        resume_physics(&mut rapier_config);
+        cmd.insert_resource(NextState(PauseState::Off));
+    }
+}
+
+#[derive(Component)]
+struct MainMenuButton;
+impl MainMenuButton {
+    fn back_to_main_menu(mut cmd: Commands) {
+        cmd.insert_resource(NextState(GameState::MainMenuAssetLoading));
     }
 }
 
@@ -166,6 +180,8 @@ impl Plugin for MenuPlugin {
             .add_system(button_interact_visual)
             .add_system(GameConfig::save.run_on_event::<GameConfigSaveEvent>())
             .add_enter_system(GameState::MainMenu, setup_menu)
+            .add_enter_system(GameState::InGame, init)
+            .add_exit_system(GameState::InGame, clean_up)
             .add_system_set(
                 ConditionSet::new()
                     .run_in_state(GameState::MainMenu)
@@ -175,15 +191,34 @@ impl Plugin for MenuPlugin {
                     .with_system(OptionButton::show.run_if(button_interact::<OptionButton>))
                     .into(),
             )
-            .add_enter_system(GameState::Paused, pause_menu)
+            .add_enter_system(PauseState::On, pause_menu)
+            .add_exit_system(PauseState::On, despawn::<Despawnable>)
             .add_system_set(
                 ConditionSet::new()
-                    .run_in_state(GameState::Paused)
+                    .run_in_state(PauseState::Off)
+                    .with_system(pause)
+                    .into(),
+            )
+            .add_system_set(
+                ConditionSet::new()
+                    .run_in_state(PauseState::On)
                     .with_system(ResumeButton::resume.run_if(button_interact::<ResumeButton>))
+                    .with_system(
+                        MainMenuButton::back_to_main_menu.run_if(button_interact::<MainMenuButton>),
+                    )
                     .with_system(QuitButton::exit.run_if(button_interact::<QuitButton>))
+                    .with_system(ResumeButton::resume.run_if(on_esc_pause_menu))
                     .into(),
             );
     }
+}
+
+fn init(mut cmd: Commands) {
+    cmd.insert_resource(NextState(PauseState::Off));
+}
+
+fn clean_up(mut cmd: Commands) {
+    cmd.insert_resource(NextState(PauseState::None));
 }
 
 fn setup_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
@@ -303,16 +338,19 @@ fn pause_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
         color: TEXT_COLOR,
     };
 
-    cmd.spawn(NodeBundle {
-        style: Style {
-            margin: UiRect::all(Val::Auto),
-            flex_direction: FlexDirection::Column,
-            align_items: AlignItems::Center,
+    cmd.spawn((
+        NodeBundle {
+            style: Style {
+                margin: UiRect::all(Val::Auto),
+                flex_direction: FlexDirection::Column,
+                align_items: AlignItems::Center,
+                ..default()
+            },
+            background_color: Color::CRIMSON.into(),
             ..default()
         },
-        background_color: Color::CRIMSON.into(),
-        ..default()
-    })
+        Despawnable,
+    ))
     .with_children(|parent| {
         parent
             .spawn(ButtonBundle {
@@ -328,16 +366,54 @@ fn pause_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
                 });
             });
 
+        parent
+            .spawn(ButtonBundle {
+                style: button_style.clone(),
+                background_color: NORMAL_BUTTON.into(),
+                ..default()
+            })
+            .insert(MainMenuButton)
+            .with_children(|parent| {
+                parent.spawn(TextBundle {
+                    text: Text::from_section("Main Menu", button_text_style.clone()),
+                    ..default()
+                });
+            });
+
         QuitButton::spawn(parent, button_text_style.clone());
     });
 }
 
-pub(crate) fn on_esc(
+/// Pressing escape on screens in Main Menu returns to Main Menu
+pub(crate) fn on_esc_main_menu(
     mut cmd: Commands,
     keys: Res<Input<KeyCode>>,
     state: Res<CurrentState<GameState>>,
 ) {
     if keys.just_pressed(KeyCode::Escape) && state.0 != GameState::MainMenu {
         cmd.insert_resource(NextState(GameState::MainMenu));
+    }
+}
+
+/// Pressing escape in PauseState::On hides pause menu
+fn on_esc_pause_menu(keys: Res<Input<KeyCode>>) -> bool {
+    keys.just_pressed(KeyCode::Escape)
+}
+
+fn pause(
+    mut rapier_config: ResMut<RapierConfiguration>,
+    mut cmd: Commands,
+    input: Query<&MenuActionState>,
+) {
+    let input = input.single();
+    if input.just_pressed(MenuAction::Pause) {
+        pause_physics(&mut rapier_config);
+        cmd.insert_resource(NextState(PauseState::On));
+    }
+}
+
+pub(crate) fn despawn<T: Component>(mut cmd: Commands, query: Query<Entity, With<T>>) {
+    for entity in query.iter() {
+        cmd.entity(entity).despawn_recursive();
     }
 }

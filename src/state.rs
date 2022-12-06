@@ -13,7 +13,6 @@ pub(crate) enum GameState {
     MainMenu,
     MainMenuAssetLoading,
     OptionMenu,
-    Paused,
     SaveMenu,
     Splash,
     SplashAssetLoading,
@@ -27,11 +26,13 @@ impl Default for GameState {
         if let Ok(state) = env::var("GAMESTATE") {
             match state.as_ref() {
                 "AudioMenu" => Self::AudioMenu,
+                "InGame" => Self::InGameAssetLoading,
                 "InGameAssetLoading" => Self::InGameAssetLoading,
+                "MainMenu" => Self::MainMenuAssetLoading,
                 "MainMenuAssetLoading" => Self::MainMenuAssetLoading,
                 "OptionMenu" => Self::OptionMenu,
                 "SaveMenu" => Self::SaveMenu,
-                "Splash" => Self::Splash,
+                "Splash" => Self::SplashAssetLoading,
                 "SplashAssetLoading" => Self::SplashAssetLoading,
                 _ => panic!("unrecognised game state {state}"),
             }
@@ -41,11 +42,26 @@ impl Default for GameState {
     }
 }
 
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq, Resource)]
+pub(crate) enum PauseState {
+    #[default]
+    None,
+    On,
+    Off,
+}
+
+impl PauseState {
+    pub(crate) fn is_paused(pause_state: Res<CurrentState<PauseState>>) -> bool {
+        pause_state.0 == PauseState::On
+    }
+}
+
 pub(crate) struct StatePlugin;
 
 impl Plugin for StatePlugin {
     fn build(&self, app: &mut App) {
         app.add_loopless_state(GameState::default())
+            .add_loopless_state(PauseState::default())
             .add_global_state::<GameState>();
     }
 }

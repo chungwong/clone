@@ -5,7 +5,9 @@ use crate::{
     asset::FontAssets,
     player::{Health, Player},
     state::{AppLooplessStateExt, ConditionSet, GameState, IntoConditionalSystem, NextState},
-    ui::menu::{button_interact, get_button_style, on_esc, BackButton, NORMAL_BUTTON, TEXT_COLOR},
+    ui::menu::{
+        button_interact, get_button_style, on_esc_main_menu, BackButton, NORMAL_BUTTON, TEXT_COLOR,
+    },
 };
 
 const SAVE_DIR: &str = "saves";
@@ -175,7 +177,7 @@ impl Plugin for SavePlugin {
                         DeleteModeButton::toggle.run_if(button_interact::<DeleteModeButton>),
                     )
                     .with_system(update_menu)
-                    .with_system(on_esc)
+                    .with_system(on_esc_main_menu)
                     .into(),
             )
             .add_system_set(

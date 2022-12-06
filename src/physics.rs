@@ -26,14 +26,24 @@ impl Plugin for PhysicsPlugin {
     }
 }
 
+pub(crate) fn pause_physics(rapier_config: &mut ResMut<RapierConfiguration>) {
+    rapier_config.physics_pipeline_active = false;
+    rapier_config.query_pipeline_active = false;
+}
+
+pub(crate) fn resume_physics(rapier_config: &mut ResMut<RapierConfiguration>) {
+    rapier_config.physics_pipeline_active = true;
+    rapier_config.query_pipeline_active = true;
+}
+
 fn pause_physics_during_load(
     mut level_events: EventReader<LevelEvent>,
     mut rapier_config: ResMut<RapierConfiguration>,
 ) {
     for event in level_events.iter() {
         match event {
-            LevelEvent::SpawnTriggered(_) => rapier_config.physics_pipeline_active = false,
-            LevelEvent::Transformed(_) => rapier_config.physics_pipeline_active = true,
+            LevelEvent::SpawnTriggered(_) => pause_physics(&mut rapier_config),
+            LevelEvent::Transformed(_) => resume_physics(&mut rapier_config),
             _ => (),
         }
     }

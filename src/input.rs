@@ -1,5 +1,10 @@
 use bevy::prelude::*;
-pub use leafwing_input_manager::prelude::{ActionState, Actionlike, InputManagerPlugin, InputMap};
+use iyes_loopless::prelude::AppLooplessStateExt;
+pub use leafwing_input_manager::prelude::{
+    ActionState, Actionlike, InputManagerPlugin, InputMap, ToggleActions,
+};
+
+use crate::state::PauseState;
 
 #[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug)]
 pub(crate) enum PlayerAction {
@@ -76,6 +81,16 @@ pub struct InputPlugin;
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(InputManagerPlugin::<MenuAction>::default())
-            .add_plugin(InputManagerPlugin::<PlayerAction>::default());
+            .add_plugin(InputManagerPlugin::<PlayerAction>::default())
+            .add_enter_system(PauseState::On, pause_player_action)
+            .add_exit_system(PauseState::On, resume_player_action);
     }
+}
+
+fn pause_player_action(mut toggle_actions: ResMut<ToggleActions<PlayerAction>>) {
+    toggle_actions.enabled = false;
+}
+
+fn resume_player_action(mut toggle_actions: ResMut<ToggleActions<PlayerAction>>) {
+    toggle_actions.enabled = true;
 }
