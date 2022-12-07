@@ -311,7 +311,7 @@ fn save_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
             parent
                 .spawn(NodeBundle {
                     style: Style {
-                        align_items: AlignItems::FlexEnd,
+                        align_items: AlignItems::FlexStart,
                         ..default()
                     },
                     background_color: Color::CRIMSON.into(),
