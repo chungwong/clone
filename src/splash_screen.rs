@@ -9,8 +9,8 @@ pub(crate) struct SplashScreenPlugin;
 
 impl Plugin for SplashScreenPlugin {
     fn build(&self, app: &mut App) {
-        app.add_enter_system(GameState::Splash, splash_setup)
-            .add_system(countdown.run_in_state(GameState::Splash));
+        app.add_enter_system(AppState::Splash, splash_setup)
+            .add_system(countdown.run_in_state(AppState::Splash));
     }
 }
 
@@ -40,6 +40,6 @@ fn splash_setup(mut cmd: Commands, font_assets: Res<FontAssets>) {
 
 fn countdown(mut cmd: Commands, time: Res<Time>, mut timer: ResMut<SplashTimer>) {
     if timer.tick(time.delta()).finished() {
-        cmd.insert_resource(NextState(GameState::MainMenuAssetLoading));
+        cmd.insert_resource(NextState(AppState::MainMenuAssetLoading));
     }
 }

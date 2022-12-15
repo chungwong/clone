@@ -19,7 +19,7 @@ use crate::{
 };
 
 #[cfg(feature = "debug")]
-use crate::state::{ConditionSet, GameState};
+use crate::state::{AppState, ConditionSet};
 
 pub struct UiPlugin;
 
@@ -30,7 +30,7 @@ impl Plugin for UiPlugin {
         #[cfg(feature = "debug")]
         app.add_system_set(
             ConditionSet::new()
-                .run_in_state(GameState::InGame)
+                .run_in_state(AppState::InGame)
                 .with_system(movement_ui)
                 .into(),
         );

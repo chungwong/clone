@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     asset::FontAssets,
     player::{Health, Player},
-    state::{AppLooplessStateExt, ConditionSet, GameState, IntoConditionalSystem, NextState},
+    state::{AppLooplessStateExt, AppState, ConditionSet, IntoConditionalSystem, NextState},
     ui::menu::{
         button_interact, get_button_style, on_esc_main_menu, BackButton, MainMenuButton,
         NORMAL_BUTTON, TEXT_COLOR,
@@ -24,7 +24,7 @@ const SAVE_DIR: &str = "saves";
 struct NewSaveButton;
 impl NewSaveButton {
     fn create(mut cmd: Commands, mut current_save: ResMut<CurrentSave>) {
-        cmd.insert_resource(NextState(GameState::InGameAssetLoading));
+        cmd.insert_resource(NextState(AppState::InGameAssetLoading));
         current_save.0 = SaveSlots::new_save();
     }
 }
@@ -48,7 +48,7 @@ impl LoadSaveButton {
                     current_save.0.data = Some(save_data);
                 }
 
-                cmd.insert_resource(NextState(GameState::InGameAssetLoading));
+                cmd.insert_resource(NextState(AppState::InGameAssetLoading));
             }
         }
     }
@@ -66,7 +66,7 @@ impl DeleteButton {
             if *interaction == Interaction::Clicked {
                 if let Some(ref path) = button.0.path {
                     if fs::remove_file(path).is_ok() {
-                        cmd.insert_resource(NextState(GameState::SaveMenu));
+                        cmd.insert_resource(NextState(AppState::SaveMenu));
                     } else {
                         error!("cannot remove save {:?}", button.0);
                     }
@@ -173,10 +173,10 @@ impl Plugin for SavePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<CurrentSave>()
             .add_event::<SaveEvent>()
-            .add_enter_system(GameState::SaveMenu, save_menu)
+            .add_enter_system(AppState::SaveMenu, save_menu)
             .add_system_set(
                 ConditionSet::new()
-                    .run_in_state(GameState::SaveMenu)
+                    .run_in_state(AppState::SaveMenu)
                     .with_system(NewSaveButton::create.run_if(button_interact::<NewSaveButton>))
                     .with_system(LoadSaveButton::load.run_if(button_interact::<LoadSaveButton>))
                     .with_system(
@@ -192,7 +192,7 @@ impl Plugin for SavePlugin {
             )
             .add_system_set(
                 ConditionSet::new()
-                    .run_in_state(GameState::InGame)
+                    .run_in_state(AppState::InGame)
                     .with_system(save_system.run_if(on_save_event))
                     .into(),
             );

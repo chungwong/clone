@@ -12,7 +12,7 @@ use move_vis::TrackMovement;
 use crate::{
     input::ControlInputManagerBundle,
     physics::*,
-    state::{ConditionSet, GameState, PauseState},
+    state::{AppState, ConditionSet, PauseState},
     tilemap::{EntityInstance, FieldValue, Worldly},
 };
 
@@ -243,7 +243,7 @@ impl Plugin for PlayerPlugin {
             .add_event::<DeathEvent>()
             .add_system_set(
                 ConditionSet::new()
-                    .run_in_state(GameState::InGame)
+                    .run_in_state(AppState::InGame)
                     .run_if_not(PauseState::is_paused)
                     .label(Label::Initial)
                     .with_system(systems::spawn_player)
@@ -251,7 +251,7 @@ impl Plugin for PlayerPlugin {
             )
             .add_system_set(
                 ConditionSet::new()
-                    .run_in_state(GameState::InGame)
+                    .run_in_state(AppState::InGame)
                     .run_if_not(PauseState::is_paused)
                     .label(Label::CheckStanding)
                     .after(Label::Initial)
@@ -261,7 +261,7 @@ impl Plugin for PlayerPlugin {
             )
             .add_system_set(
                 ConditionSet::new()
-                    .run_in_state(GameState::InGame)
+                    .run_in_state(AppState::InGame)
                     .run_if_not(PauseState::is_paused)
                     .label(Label::Movement)
                     .after(Label::CheckStanding)
@@ -274,7 +274,7 @@ impl Plugin for PlayerPlugin {
             .add_system_set(
                 ConditionSet::new()
                     .label(Label::DeathSystems)
-                    .run_in_state(GameState::InGame)
+                    .run_in_state(AppState::InGame)
                     .run_if_not(PauseState::is_paused)
                     .with_system(systems::hp_death)
                     .with_system(systems::fall_death)
@@ -282,7 +282,7 @@ impl Plugin for PlayerPlugin {
             )
             .add_system_set(
                 ConditionSet::new()
-                    .run_in_state(GameState::InGame)
+                    .run_in_state(AppState::InGame)
                     .run_if_not(PauseState::is_paused)
                     .after(Label::DeathSystems)
                     .with_system(systems::process_death_event)
@@ -291,7 +291,7 @@ impl Plugin for PlayerPlugin {
             .add_system_set_to_stage(
                 CoreStage::PostUpdate,
                 ConditionSet::new()
-                    .run_in_state(GameState::InGame)
+                    .run_in_state(AppState::InGame)
                     .run_if_not(PauseState::is_paused)
                     .with_system(systems::boundary)
                     .into(),

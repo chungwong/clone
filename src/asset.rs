@@ -3,7 +3,7 @@ use bevy_asset_loader::prelude::*;
 
 use crate::{
     audio::AudioSource,
-    state::{AppLooplessStateExt, GameState},
+    state::{AppLooplessStateExt, AppState},
 };
 
 #[derive(AssetCollection, Resource)]
@@ -35,16 +35,16 @@ pub(crate) struct AssetPlugin;
 impl Plugin for AssetPlugin {
     fn build(&self, app: &mut App) {
         app.add_loading_state(
-            LoadingState::new(GameState::SplashAssetLoading)
-                .continue_to_state(GameState::Splash)
+            LoadingState::new(AppState::SplashAssetLoading)
+                .continue_to_state(AppState::Splash)
                 .with_dynamic_collections::<StandardDynamicAssetCollection>(vec![
                     "dynamic_asset.assets",
                 ])
                 .with_collection::<FontAssets>(),
         )
         .add_loading_state(
-            LoadingState::new(GameState::MainMenuAssetLoading)
-                .continue_to_state(GameState::MainMenu)
+            LoadingState::new(AppState::MainMenuAssetLoading)
+                .continue_to_state(AppState::MainMenu)
                 .with_dynamic_collections::<StandardDynamicAssetCollection>(vec![
                     "dynamic_asset.assets",
                 ])
@@ -52,8 +52,8 @@ impl Plugin for AssetPlugin {
                 .with_collection::<MainMenuAssets>(),
         )
         .add_loading_state(
-            LoadingState::new(GameState::InGameAssetLoading)
-                .continue_to_state(GameState::InGame)
+            LoadingState::new(AppState::InGameAssetLoading)
+                .continue_to_state(AppState::InGame)
                 .with_dynamic_collections::<StandardDynamicAssetCollection>(vec![
                     "dynamic_asset.assets",
                 ])
@@ -61,8 +61,8 @@ impl Plugin for AssetPlugin {
                 .with_collection::<ImageAssets>()
                 .with_collection::<AudioAssets>(),
         )
-        .add_enter_system(GameState::MainMenuAssetLoading, loading_screen)
-        .add_enter_system(GameState::InGameAssetLoading, loading_screen);
+        .add_enter_system(AppState::MainMenuAssetLoading, loading_screen)
+        .add_enter_system(AppState::InGameAssetLoading, loading_screen);
     }
 }
 

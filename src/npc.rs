@@ -6,7 +6,7 @@ use crate::{
     asset::ImageAssets,
     physics::*,
     player::Health,
-    state::{ConditionSet, GameState},
+    state::{AppState, ConditionSet},
     tilemap::{
         ldtk_pixel_coords_to_translation_pivoted, EntityInstance, FieldValue, LayerInstance,
         LdtkLevel,
@@ -213,7 +213,7 @@ impl Plugin for NpcPlugin {
     fn build(&self, app: &mut App) {
         app.add_system_set(
             ConditionSet::new()
-                .run_in_state(GameState::InGame)
+                .run_in_state(AppState::InGame)
                 .with_system(Enemy::spawn_npc)
                 .with_system(Enemy::despawn)
                 .with_system(Patrol::patrol)

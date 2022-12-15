@@ -5,7 +5,7 @@ use global_state::Persistent;
 use crate::{
     input::MenuInputManagerBundle,
     player::Player,
-    state::{ConditionSet, GameState},
+    state::{AppState, ConditionSet},
     tilemap::{LdtkLevel, LevelSelection},
 };
 
@@ -34,7 +34,7 @@ impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(setup).add_system_set(
             ConditionSet::new()
-                .run_in_state(GameState::InGame)
+                .run_in_state(AppState::InGame)
                 .with_system(fit_camera_to_level)
                 .with_system(despawn_offscreens)
                 .into(),

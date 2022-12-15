@@ -81,7 +81,7 @@ struct StartGameButton;
 
 impl StartGameButton {
     fn start(mut cmd: Commands) {
-        cmd.insert_resource(NextState(GameState::SaveMenu));
+        cmd.insert_resource(NextState(AppState::SaveMenu));
     }
 }
 
@@ -101,7 +101,7 @@ struct OptionsMenuButton;
 pub(crate) struct MainMenuButton;
 impl MainMenuButton {
     pub(crate) fn back_to_main_menu(mut cmd: Commands) {
-        cmd.insert_resource(NextState(GameState::MainMenu));
+        cmd.insert_resource(NextState(AppState::MainMenu));
     }
 }
 
@@ -202,12 +202,12 @@ impl Plugin for MenuPlugin {
             .add_startup_system(GameConfig::load)
             .add_system(button_interact_visual)
             .add_system(GameConfig::save.run_on_event::<GameConfigSaveEvent>())
-            .add_enter_system(GameState::MainMenu, setup_menu)
-            .add_enter_system(GameState::InGame, init)
-            .add_exit_system(GameState::InGame, clean_up)
+            .add_enter_system(AppState::MainMenu, setup_menu)
+            .add_enter_system(AppState::InGame, init)
+            .add_exit_system(AppState::InGame, clean_up)
             .add_system_set(
                 ConditionSet::new()
-                    .run_in_state(GameState::MainMenu)
+                    .run_in_state(AppState::MainMenu)
                     .with_system(close_on_esc)
                     .with_system(QuitButton::exit.run_if(button_interact::<QuitButton>))
                     .with_system(StartGameButton::start.run_if(button_interact::<StartGameButton>))

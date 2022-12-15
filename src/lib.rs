@@ -22,7 +22,7 @@ pub fn run() {
     let mut app = App::new();
 
     app.add_plugins(DefaultPlugins)
-        //state should be loaded first as there are a lot of plugins depend on `GameState`
+        //state should be loaded first as there are a lot of plugins depend on `AppState`
         .add_plugin(state::StatePlugin)
         .add_plugin(asset::AssetPlugin)
         .add_plugin(audio::AudioPlugin)

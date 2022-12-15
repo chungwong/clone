@@ -3,7 +3,7 @@ pub use bevy_rapier2d::prelude::*;
 
 use crate::{
     player::PlayerMovementSettings,
-    state::{AppLooplessStateExt, ConditionSet, GameState},
+    state::{AppLooplessStateExt, AppState, ConditionSet},
     tilemap::LevelEvent,
 };
 
@@ -16,10 +16,10 @@ pub(crate) struct PhysicsPlugin;
 impl Plugin for PhysicsPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(SCALE))
-            .add_enter_system(GameState::InGame, setup)
+            .add_enter_system(AppState::InGame, setup)
             .add_system_set(
                 ConditionSet::new()
-                    .run_in_state(GameState::InGame)
+                    .run_in_state(AppState::InGame)
                     .with_system(pause_physics_during_load)
                     .into(),
             );

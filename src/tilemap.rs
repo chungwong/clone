@@ -7,7 +7,7 @@ pub use bevy_ecs_ldtk::{prelude::*, utils::ldtk_pixel_coords_to_translation_pivo
 
 use crate::{
     physics::{Collider, RigidBody},
-    state::{AppLooplessStateExt, ConditionSet, GameState},
+    state::{AppLooplessStateExt, AppState, ConditionSet},
 };
 
 pub(crate) mod check_point;
@@ -30,16 +30,16 @@ impl Plugin for TilemapPlugin {
                 set_clear_color: SetClearColor::FromLevelBackground,
                 ..default()
             })
-            .add_enter_system(GameState::InGame, setup)
+            .add_enter_system(AppState::InGame, setup)
             .add_system_set(
                 ConditionSet::new()
-                    .run_in_state(GameState::InGame)
+                    .run_in_state(AppState::InGame)
                     .with_system(spawn_wall_collision)
                     .into(),
             )
             .add_system_set(
                 ConditionSet::new()
-                    .run_in_state(GameState::InGameAssetLoading)
+                    .run_in_state(AppState::InGameAssetLoading)
                     .with_system(set_boundary)
                     .into(),
             )

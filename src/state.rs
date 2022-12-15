@@ -6,7 +6,7 @@ pub(crate) use iyes_loopless::prelude::*;
 
 // GlobalState will despawn all compoents on state exit, unless they are marked with Persistent
 #[derive(Clone, Copy, Debug, Eq, Hash, GlobalState, PartialEq, Resource)]
-pub(crate) enum GameState {
+pub(crate) enum AppState {
     InGame,
     InGameAssetLoading,
     MainMenu,
@@ -16,12 +16,12 @@ pub(crate) enum GameState {
     SplashAssetLoading,
 }
 
-impl Default for GameState {
+impl Default for AppState {
     fn default() -> Self {
         // game state can be controlled during cargo run
         //
         // ❯ GAMESTATE=InGame cargo run
-        if let Ok(state) = env::var("GAMESTATE") {
+        if let Ok(state) = env::var("APPSTATE") {
             match state.as_ref() {
                 "InGame" => Self::InGameAssetLoading,
                 "InGameAssetLoading" => Self::InGameAssetLoading,
@@ -66,9 +66,9 @@ pub(crate) struct StatePlugin;
 
 impl Plugin for StatePlugin {
     fn build(&self, app: &mut App) {
-        app.add_loopless_state(GameState::default())
+        app.add_loopless_state(AppState::default())
             .add_loopless_state(MenuState::default())
             .add_loopless_state(PauseState::default())
-            .add_global_state::<GameState>();
+            .add_global_state::<AppState>();
     }
 }

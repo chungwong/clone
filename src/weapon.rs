@@ -4,7 +4,7 @@ use crate::{
     camera::Offscreen,
     physics::*,
     player::{Health, Player},
-    state::{ConditionSet, GameState},
+    state::{AppState, ConditionSet},
 };
 
 #[derive(Clone, Component, Debug, Deref, DerefMut, Reflect)]
@@ -51,7 +51,7 @@ impl Plugin for WeaponPlugin {
     fn build(&self, app: &mut App) {
         app.add_system_set(
             ConditionSet::new()
-                .run_in_state(GameState::InGame)
+                .run_in_state(AppState::InGame)
                 .with_system(despawn_projectiles)
                 .with_system(add_weapon)
                 .with_system(weapon_cooldown)

@@ -5,7 +5,7 @@ use crate::{
     physics::*,
     player::Player,
     save::SaveEvent,
-    state::{ConditionSet, GameState},
+    state::{AppState, ConditionSet},
 };
 
 use super::{
@@ -34,7 +34,7 @@ impl Plugin for CheckPointPlugin {
         app.init_resource::<LastCheckPoint>()
             .add_system_set(
                 ConditionSet::new()
-                    .run_in_state(GameState::InGame)
+                    .run_in_state(AppState::InGame)
                     .with_system(save_last_check_point)
                     .with_system(spawn_check_points)
                     .with_system(save_initial_check_point)
