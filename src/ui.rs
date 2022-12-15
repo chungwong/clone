@@ -2,6 +2,7 @@ pub(crate) mod audio;
 pub(crate) mod control;
 pub(crate) mod menu;
 pub(crate) mod options;
+pub(crate) mod save;
 
 use bevy::prelude::*;
 

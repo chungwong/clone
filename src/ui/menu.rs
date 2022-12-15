@@ -16,6 +16,7 @@ use crate::{
         audio::AudioConfig,
         control::{BindingState, ControlConfig},
         options::OptionPlugin,
+        save::SaveMenuPlugin,
     },
 };
 
@@ -199,6 +200,7 @@ impl Plugin for MenuPlugin {
         app.init_resource::<GameConfig>()
             .add_event::<GameConfigSaveEvent>()
             .add_plugin(OptionPlugin)
+            .add_plugin(SaveMenuPlugin)
             .add_startup_system(GameConfig::load)
             .add_system(button_interact_visual)
             .add_system(GameConfig::save.run_on_event::<GameConfigSaveEvent>())
