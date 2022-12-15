@@ -51,10 +51,13 @@ impl Plugin for TilemapPlugin {
 fn setup(mut cmd: Commands, asset_server: Res<AssetServer>) {
     cmd.spawn(Camera2dBundle::default());
 
-    cmd.spawn(LdtkWorldBundle {
-        ldtk_handle: asset_server.load("levels/reckoning.ldtk"),
-        ..default()
-    });
+    cmd.spawn((
+        Name::new("Ldtk World"),
+        LdtkWorldBundle {
+            ldtk_handle: asset_server.load("levels/reckoning.ldtk"),
+            ..default()
+        },
+    ));
 }
 
 #[allow(clippy::only_used_in_recursion)]

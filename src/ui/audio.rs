@@ -102,6 +102,7 @@ fn audio_menu(mut cmd: Commands, game_config: Res<GameConfig>, font_assets: Res<
     };
 
     cmd.spawn((
+        Name::new("Audio Menu"),
         Despawnable,
         NodeBundle {
             style: Style {
@@ -116,28 +117,34 @@ fn audio_menu(mut cmd: Commands, game_config: Res<GameConfig>, font_assets: Res<
     ))
     .with_children(|parent| {
         parent
-            .spawn(NodeBundle {
-                style: Style {
-                    margin: UiRect::all(Val::Auto),
-                    flex_direction: FlexDirection::Column,
-                    align_items: AlignItems::Center,
+            .spawn((
+                Name::new("Wrapper"),
+                NodeBundle {
+                    style: Style {
+                        margin: UiRect::all(Val::Auto),
+                        flex_direction: FlexDirection::Column,
+                        align_items: AlignItems::Center,
+                        ..default()
+                    },
+                    background_color: Color::CRIMSON.into(),
                     ..default()
                 },
-                background_color: Color::CRIMSON.into(),
-                ..default()
-            })
+            ))
             .with_children(|parent| {
                 parent
-                    .spawn(NodeBundle {
-                        style: Style {
-                            margin: UiRect::all(Val::Auto),
-                            flex_direction: FlexDirection::Column,
-                            align_items: AlignItems::Center,
+                    .spawn((
+                        Name::new("Title"),
+                        NodeBundle {
+                            style: Style {
+                                margin: UiRect::all(Val::Auto),
+                                flex_direction: FlexDirection::Column,
+                                align_items: AlignItems::Center,
+                                ..default()
+                            },
+                            background_color: Color::CRIMSON.into(),
                             ..default()
                         },
-                        background_color: Color::CRIMSON.into(),
-                        ..default()
-                    })
+                    ))
                     .with_children(|parent| {
                         parent.spawn(TextBundle {
                             style: Style {
@@ -156,14 +163,17 @@ fn audio_menu(mut cmd: Commands, game_config: Res<GameConfig>, font_assets: Res<
                         });
                     });
                 parent
-                    .spawn(NodeBundle {
-                        style: Style {
-                            align_items: AlignItems::Center,
+                    .spawn((
+                        Name::new("Master Volume"),
+                        NodeBundle {
+                            style: Style {
+                                align_items: AlignItems::Center,
+                                ..default()
+                            },
+                            background_color: Color::CRIMSON.into(),
                             ..default()
                         },
-                        background_color: Color::CRIMSON.into(),
-                        ..default()
-                    })
+                    ))
                     .with_children(|parent| {
                         parent.spawn(TextBundle::from_section(
                             "Master Volume",
@@ -172,29 +182,35 @@ fn audio_menu(mut cmd: Commands, game_config: Res<GameConfig>, font_assets: Res<
                         for volume_setting in
                             [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
                         {
-                            let mut entity = parent.spawn(ButtonBundle {
-                                style: Style {
-                                    size: Size::new(Val::Px(30.0), Val::Px(65.0)),
-                                    ..button_style.clone()
+                            let mut entity = parent.spawn((
+                                Name::new(format!("Vol {volume_setting}")),
+                                MasterVolume(volume_setting),
+                                ButtonBundle {
+                                    style: Style {
+                                        size: Size::new(Val::Px(30.0), Val::Px(65.0)),
+                                        ..button_style.clone()
+                                    },
+                                    background_color: NORMAL_BUTTON.into(),
+                                    ..default()
                                 },
-                                background_color: NORMAL_BUTTON.into(),
-                                ..default()
-                            });
-                            entity.insert(MasterVolume(volume_setting));
+                            ));
                             if audio_config.master_volume == MasterVolume(volume_setting) {
                                 entity.insert(SelectedOption);
                             }
                         }
                     });
                 parent
-                    .spawn(NodeBundle {
-                        style: Style {
-                            align_items: AlignItems::Center,
+                    .spawn((
+                        Name::new("Music Volume"),
+                        NodeBundle {
+                            style: Style {
+                                align_items: AlignItems::Center,
+                                ..default()
+                            },
+                            background_color: Color::CRIMSON.into(),
                             ..default()
                         },
-                        background_color: Color::CRIMSON.into(),
-                        ..default()
-                    })
+                    ))
                     .with_children(|parent| {
                         parent.spawn(TextBundle::from_section(
                             "Music Volume",
@@ -203,29 +219,35 @@ fn audio_menu(mut cmd: Commands, game_config: Res<GameConfig>, font_assets: Res<
                         for volume_setting in
                             [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
                         {
-                            let mut entity = parent.spawn(ButtonBundle {
-                                style: Style {
-                                    size: Size::new(Val::Px(30.0), Val::Px(65.0)),
-                                    ..button_style.clone()
+                            let mut entity = parent.spawn((
+                                Name::new(format!("Vol {volume_setting}")),
+                                MusicVolume(volume_setting),
+                                ButtonBundle {
+                                    style: Style {
+                                        size: Size::new(Val::Px(30.0), Val::Px(65.0)),
+                                        ..button_style.clone()
+                                    },
+                                    background_color: NORMAL_BUTTON.into(),
+                                    ..default()
                                 },
-                                background_color: NORMAL_BUTTON.into(),
-                                ..default()
-                            });
-                            entity.insert(MusicVolume(volume_setting));
+                            ));
                             if audio_config.music_volume == MusicVolume(volume_setting) {
                                 entity.insert(SelectedOption);
                             }
                         }
                     });
                 parent
-                    .spawn(NodeBundle {
-                        style: Style {
-                            align_items: AlignItems::Center,
+                    .spawn((
+                        Name::new("Sound Volume"),
+                        NodeBundle {
+                            style: Style {
+                                align_items: AlignItems::Center,
+                                ..default()
+                            },
+                            background_color: Color::CRIMSON.into(),
                             ..default()
                         },
-                        background_color: Color::CRIMSON.into(),
-                        ..default()
-                    })
+                    ))
                     .with_children(|parent| {
                         parent.spawn(TextBundle::from_section(
                             "Sound Volume",
@@ -234,35 +256,25 @@ fn audio_menu(mut cmd: Commands, game_config: Res<GameConfig>, font_assets: Res<
                         for volume_setting in
                             [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
                         {
-                            let mut entity = parent.spawn(ButtonBundle {
-                                style: Style {
-                                    size: Size::new(Val::Px(30.0), Val::Px(65.0)),
-                                    ..button_style.clone()
+                            let mut entity = parent.spawn((
+                                Name::new(format!("Vol {volume_setting}")),
+                                SoundVolume(volume_setting),
+                                ButtonBundle {
+                                    style: Style {
+                                        size: Size::new(Val::Px(30.0), Val::Px(65.0)),
+                                        ..button_style.clone()
+                                    },
+                                    background_color: NORMAL_BUTTON.into(),
+                                    ..default()
                                 },
-                                background_color: NORMAL_BUTTON.into(),
-                                ..default()
-                            });
-                            entity.insert(SoundVolume(volume_setting));
+                            ));
                             if audio_config.sound_volume == SoundVolume(volume_setting) {
                                 entity.insert(SelectedOption);
                             }
                         }
                     });
 
-                parent
-                    .spawn(NodeBundle {
-                        style: Style {
-                            margin: UiRect::all(Val::Auto),
-                            flex_direction: FlexDirection::Column,
-                            align_items: AlignItems::Center,
-                            ..default()
-                        },
-                        background_color: Color::CRIMSON.into(),
-                        ..default()
-                    })
-                    .with_children(|parent| {
-                        BackButton::spawn(parent, button_text_style.clone());
-                    });
+                BackButton::spawn(parent, button_text_style.clone());
             });
     });
 }

@@ -106,6 +106,7 @@ pub(crate) fn spawn_projectile(cmd: &mut Commands, translation: &Vec3, player: &
     let offset = Vec3::new(10.0 * dir, 0.0, 0.0);
 
     cmd.spawn((
+        Name::new("Projectile"),
         SpriteBundle {
             transform: Transform::from_translation(*translation + offset),
             ..default()

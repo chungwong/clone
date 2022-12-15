@@ -30,10 +30,13 @@ fn splash_setup(mut cmd: Commands, font_assets: Res<FontAssets>) {
         horizontal: HorizontalAlign::Center,
     };
 
-    cmd.spawn(Text2dBundle {
-        text: Text::from_section("Splash Screen", text_style).with_alignment(text_alignment),
-        ..default()
-    });
+    cmd.spawn((
+        Name::new("Splash"),
+        Text2dBundle {
+            text: Text::from_section("Splash Screen", text_style).with_alignment(text_alignment),
+            ..default()
+        },
+    ));
 
     cmd.insert_resource(SplashTimer(Timer::from_seconds(1.0, TimerMode::Once)));
 }

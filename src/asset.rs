@@ -71,21 +71,24 @@ fn loading_screen(mut cmd: Commands, asset_server: Res<AssetServer>) {
 
     let font = asset_server.load("fonts/monogram.ttf");
 
-    cmd.spawn(Text2dBundle {
-        text: Text::from_section(
-            "Loading".to_owned(),
-            TextStyle {
-                font,
-                font_size: 68.0,
-                color: Color::WHITE,
-            },
-        )
-        .with_alignment(TextAlignment {
-            horizontal: HorizontalAlign::Center,
-            vertical: VerticalAlign::Center,
-        }),
-        ..default()
-    });
+    cmd.spawn((
+        Name::new("Loading"),
+        Text2dBundle {
+            text: Text::from_section(
+                "Loading".to_owned(),
+                TextStyle {
+                    font,
+                    font_size: 68.0,
+                    color: Color::WHITE,
+                },
+            )
+            .with_alignment(TextAlignment {
+                horizontal: HorizontalAlign::Center,
+                vertical: VerticalAlign::Center,
+            }),
+            ..default()
+        },
+    ));
 
     cmd.spawn(SpriteBundle {
         sprite: Sprite {

@@ -44,9 +44,9 @@ pub(crate) fn get_button_style() -> Style {
 }
 
 #[derive(Component, Debug)]
-struct OptionButton;
+struct OptionsButton;
 
-impl OptionButton {
+impl OptionsButton {
     fn show(mut cmd: Commands) {
         cmd.insert_resource(NextState(MenuState::Options));
     }
@@ -62,12 +62,15 @@ impl QuitButton {
 
     pub(crate) fn spawn(parent: &mut ChildBuilder, button_text_style: TextStyle) {
         parent
-            .spawn(ButtonBundle {
-                style: get_button_style(),
-                background_color: NORMAL_BUTTON.into(),
-                ..default()
-            })
-            .insert(Self)
+            .spawn((
+                Name::new("Quit"),
+                Self,
+                ButtonBundle {
+                    style: get_button_style(),
+                    background_color: NORMAL_BUTTON.into(),
+                    ..default()
+                },
+            ))
             .with_children(|parent| {
                 parent.spawn(TextBundle {
                     text: Text::from_section("Quit", button_text_style),
@@ -133,17 +136,36 @@ impl BackButton {
 
     pub(crate) fn spawn(parent: &mut ChildBuilder, button_text_style: TextStyle) {
         parent
-            .spawn(ButtonBundle {
-                style: get_button_style(),
-                background_color: NORMAL_BUTTON.into(),
-                ..default()
-            })
-            .insert(Self)
-            .with_children(|parent| {
-                parent.spawn(TextBundle {
-                    text: Text::from_section("Back", button_text_style),
+            .spawn((
+                Name::new("Back"),
+                NodeBundle {
+                    style: Style {
+                        margin: UiRect::all(Val::Auto),
+                        flex_direction: FlexDirection::Column,
+                        align_items: AlignItems::Center,
+                        ..default()
+                    },
+                    background_color: Color::CRIMSON.into(),
                     ..default()
-                });
+                },
+            ))
+            .with_children(|parent| {
+                parent
+                    .spawn((
+                        Name::new("Back Button"),
+                        Self,
+                        ButtonBundle {
+                            style: get_button_style(),
+                            background_color: NORMAL_BUTTON.into(),
+                            ..default()
+                        },
+                    ))
+                    .with_children(|parent| {
+                        parent.spawn(TextBundle {
+                            text: Text::from_section("Back", button_text_style),
+                            ..default()
+                        });
+                    });
             });
     }
 }
@@ -213,7 +235,7 @@ impl Plugin for MenuPlugin {
                     .with_system(close_on_esc)
                     .with_system(QuitButton::exit.run_if(button_interact::<QuitButton>))
                     .with_system(StartGameButton::start.run_if(button_interact::<StartGameButton>))
-                    .with_system(OptionButton::show.run_if(button_interact::<OptionButton>))
+                    .with_system(OptionsButton::show.run_if(button_interact::<OptionsButton>))
                     .into(),
             )
             .add_enter_system(PauseState::On, pause_menu)
@@ -267,42 +289,51 @@ fn setup_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
         color: TEXT_COLOR,
     };
 
-    cmd.spawn(NodeBundle {
-        style: Style {
-            margin: UiRect::all(Val::Auto),
-            flex_direction: FlexDirection::Column,
-            align_items: AlignItems::Center,
-            ..default()
-        },
-        background_color: Color::CRIMSON.into(),
-        ..default()
-    })
-    .with_children(|parent| {
-        // Display the game name
-        parent.spawn(TextBundle {
+    cmd.spawn((
+        Name::new("Main Menu"),
+        NodeBundle {
             style: Style {
-                margin: UiRect::all(Val::Px(50.0)),
+                margin: UiRect::all(Val::Auto),
+                flex_direction: FlexDirection::Column,
+                align_items: AlignItems::Center,
                 ..default()
             },
-            text: Text::from_section(
-                "Reckoning",
-                TextStyle {
-                    font: font.clone(),
-                    font_size: 80.0,
-                    color: TEXT_COLOR,
-                },
-            ),
+            background_color: Color::CRIMSON.into(),
             ..default()
-        });
+        },
+    ))
+    .with_children(|parent| {
+        // Display the game name
+        parent.spawn((
+            Name::new("Title"),
+            TextBundle {
+                style: Style {
+                    margin: UiRect::all(Val::Px(50.0)),
+                    ..default()
+                },
+                text: Text::from_section(
+                    "Reckoning",
+                    TextStyle {
+                        font: font.clone(),
+                        font_size: 80.0,
+                        color: TEXT_COLOR,
+                    },
+                ),
+                ..default()
+            },
+        ));
 
         // Main menu buttons
         parent
-            .spawn(ButtonBundle {
-                style: button_style.clone(),
-                background_color: NORMAL_BUTTON.into(),
-                ..default()
-            })
-            .insert(StartGameButton)
+            .spawn((
+                Name::new("StartGame"),
+                StartGameButton,
+                ButtonBundle {
+                    style: button_style.clone(),
+                    background_color: NORMAL_BUTTON.into(),
+                    ..default()
+                },
+            ))
             .with_children(|parent| {
                 parent.spawn(TextBundle {
                     text: Text::from_section("Start Game", button_text_style.clone()),
@@ -311,12 +342,15 @@ fn setup_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
             });
 
         parent
-            .spawn(ButtonBundle {
-                style: button_style.clone(),
-                background_color: NORMAL_BUTTON.into(),
-                ..default()
-            })
-            .insert(OptionButton)
+            .spawn((
+                Name::new("Options"),
+                ButtonBundle {
+                    style: button_style.clone(),
+                    background_color: NORMAL_BUTTON.into(),
+                    ..default()
+                },
+                OptionsButton,
+            ))
             .with_children(|parent| {
                 parent.spawn(TextBundle {
                     text: Text::from_section("Option", button_text_style.clone()),
@@ -372,6 +406,7 @@ fn pause_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
     };
 
     cmd.spawn((
+        Name::new("Pause Menu"),
         NodeBundle {
             style: Style {
                 margin: UiRect::all(Val::Auto),
@@ -386,12 +421,15 @@ fn pause_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
     ))
     .with_children(|parent| {
         parent
-            .spawn(ButtonBundle {
-                style: button_style.clone(),
-                background_color: NORMAL_BUTTON.into(),
-                ..default()
-            })
-            .insert(ResumeButton)
+            .spawn((
+                Name::new("Resume Button"),
+                ResumeButton,
+                ButtonBundle {
+                    style: button_style.clone(),
+                    background_color: NORMAL_BUTTON.into(),
+                    ..default()
+                },
+            ))
             .with_children(|parent| {
                 parent.spawn(TextBundle {
                     text: Text::from_section("Resume", button_text_style.clone()),
@@ -400,12 +438,15 @@ fn pause_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
             });
 
         parent
-            .spawn(ButtonBundle {
-                style: button_style.clone(),
-                background_color: NORMAL_BUTTON.into(),
-                ..default()
-            })
-            .insert(OptionsMenuButton)
+            .spawn((
+                Name::new("Options Button"),
+                OptionsMenuButton,
+                ButtonBundle {
+                    style: button_style.clone(),
+                    background_color: NORMAL_BUTTON.into(),
+                    ..default()
+                },
+            ))
             .with_children(|parent| {
                 parent.spawn(TextBundle {
                     text: Text::from_section("Options", button_text_style.clone()),
@@ -414,12 +455,15 @@ fn pause_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
             });
 
         parent
-            .spawn(ButtonBundle {
-                style: button_style.clone(),
-                background_color: NORMAL_BUTTON.into(),
-                ..default()
-            })
-            .insert(MainMenuButton)
+            .spawn((
+                Name::new("Main Menu Button"),
+                MainMenuButton,
+                ButtonBundle {
+                    style: button_style.clone(),
+                    background_color: NORMAL_BUTTON.into(),
+                    ..default()
+                },
+            ))
             .with_children(|parent| {
                 parent.spawn(TextBundle {
                     text: Text::from_section("Main Menu", button_text_style.clone()),

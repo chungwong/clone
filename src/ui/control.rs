@@ -86,6 +86,7 @@ impl BindingButton {
                 cmd.insert_resource(ActiveBinding::new(*action, *index));
 
                 cmd.spawn((
+                    Name::new("Binding Popup"),
                     Despawnable,
                     BindingPopUp,
                     NodeBundle {
@@ -168,12 +169,15 @@ struct ResetButton;
 impl ResetButton {
     fn spawn(parent: &mut ChildBuilder, button_text_style: TextStyle) {
         parent
-            .spawn(ButtonBundle {
-                style: get_button_style(),
-                background_color: NORMAL_BUTTON.into(),
-                ..default()
-            })
-            .insert(Self)
+            .spawn((
+                Name::new("Reset Button"),
+                Self,
+                ButtonBundle {
+                    style: get_button_style(),
+                    background_color: NORMAL_BUTTON.into(),
+                    ..default()
+                },
+            ))
             .with_children(|parent| {
                 parent.spawn(TextBundle {
                     text: Text::from_section("Reset", button_text_style),
@@ -302,6 +306,7 @@ impl BindingConflict {
                     };
 
                     cmd.spawn((
+                        Name::new("Conflict Popup"),
                         Despawnable,
                         BindingPopUp,
                         NodeBundle {
@@ -317,16 +322,19 @@ impl BindingConflict {
                     ))
                     .with_children(|parent| {
                         parent
-                            .spawn(NodeBundle {
-                                style: Style {
-                                    margin: UiRect::all(Val::Auto),
-                                    flex_direction: FlexDirection::Column,
-                                    align_items: AlignItems::Center,
+                            .spawn((
+                                Name::new("Binding Message"),
+                                NodeBundle {
+                                    style: Style {
+                                        margin: UiRect::all(Val::Auto),
+                                        flex_direction: FlexDirection::Column,
+                                        align_items: AlignItems::Center,
+                                        ..default()
+                                    },
+                                    background_color: Color::NAVY.into(),
                                     ..default()
                                 },
-                                background_color: Color::NAVY.into(),
-                                ..default()
-                            })
+                            ))
                             .with_children(|parent| {
                                 parent.spawn(TextBundle {
                                     style: Style {
@@ -348,21 +356,27 @@ impl BindingConflict {
                                 });
 
                                 parent
-                                    .spawn(NodeBundle {
-                                        style: Style {
-                                            margin: UiRect::all(Val::Auto),
-                                            flex_direction: FlexDirection::Row,
-                                            align_items: AlignItems::Center,
+                                    .spawn((
+                                        Name::new("Actions"),
+                                        NodeBundle {
+                                            style: Style {
+                                                margin: UiRect::all(Val::Auto),
+                                                flex_direction: FlexDirection::Row,
+                                                align_items: AlignItems::Center,
+                                                ..default()
+                                            },
                                             ..default()
                                         },
-                                        ..default()
-                                    })
+                                    ))
                                     .with_children(|parent| {
                                         parent
-                                            .spawn(ButtonBundle {
-                                                background_color: NORMAL_BUTTON.into(),
-                                                ..default()
-                                            })
+                                            .spawn((
+                                                Name::new("Replace Button"),
+                                                ButtonBundle {
+                                                    background_color: NORMAL_BUTTON.into(),
+                                                    ..default()
+                                                },
+                                            ))
                                             .insert(ReplaceConflictButton)
                                             .with_children(|parent| {
                                                 parent.spawn(TextBundle {
@@ -375,10 +389,13 @@ impl BindingConflict {
                                             });
 
                                         parent
-                                            .spawn(ButtonBundle {
-                                                background_color: NORMAL_BUTTON.into(),
-                                                ..default()
-                                            })
+                                            .spawn((
+                                                Name::new("Cancel Button"),
+                                                ButtonBundle {
+                                                    background_color: NORMAL_BUTTON.into(),
+                                                    ..default()
+                                                },
+                                            ))
                                             .insert(CancelConflictButton)
                                             .with_children(|parent| {
                                                 parent.spawn(TextBundle {
@@ -452,6 +469,7 @@ fn control_menu(
     };
 
     cmd.spawn((
+        Name::new("Controls Menu"),
         Despawnable,
         NodeBundle {
             style: Style {
@@ -466,28 +484,34 @@ fn control_menu(
     ))
     .with_children(|parent| {
         parent
-            .spawn(NodeBundle {
-                style: Style {
-                    margin: UiRect::all(Val::Auto),
-                    flex_direction: FlexDirection::Column,
-                    align_items: AlignItems::Center,
+            .spawn((
+                Name::new("Wrapper"),
+                NodeBundle {
+                    style: Style {
+                        margin: UiRect::all(Val::Auto),
+                        flex_direction: FlexDirection::Column,
+                        align_items: AlignItems::Center,
+                        ..default()
+                    },
+                    background_color: Color::CRIMSON.into(),
                     ..default()
                 },
-                background_color: Color::CRIMSON.into(),
-                ..default()
-            })
+            ))
             .with_children(|parent| {
                 parent
-                    .spawn(NodeBundle {
-                        style: Style {
-                            margin: UiRect::all(Val::Auto),
-                            flex_direction: FlexDirection::Column,
-                            align_items: AlignItems::Center,
+                    .spawn((
+                        Name::new("Title"),
+                        NodeBundle {
+                            style: Style {
+                                margin: UiRect::all(Val::Auto),
+                                flex_direction: FlexDirection::Column,
+                                align_items: AlignItems::Center,
+                                ..default()
+                            },
+                            background_color: Color::CRIMSON.into(),
                             ..default()
                         },
-                        background_color: Color::CRIMSON.into(),
-                        ..default()
-                    })
+                    ))
                     .with_children(|parent| {
                         parent.spawn(TextBundle {
                             style: Style {
@@ -521,26 +545,35 @@ fn control_menu(
                     };
 
                     parent
-                        .spawn(NodeBundle {
-                            style: Style {
-                                align_items: AlignItems::Center,
+                        .spawn((
+                            Name::new(format!("{action:?} Action")),
+                            NodeBundle {
+                                style: Style {
+                                    align_items: AlignItems::Center,
+                                    ..default()
+                                },
+                                background_color: Color::CRIMSON.into(),
                                 ..default()
                             },
-                            background_color: Color::CRIMSON.into(),
-                            ..default()
-                        })
+                        ))
                         .with_children(|parent| {
-                            parent.spawn(TextBundle::from_section(
-                                format!("{action:?}  "),
-                                button_text_style.clone(),
+                            parent.spawn((
+                                Name::new("Action"),
+                                TextBundle::from_section(
+                                    format!("{action:?}  "),
+                                    button_text_style.clone(),
+                                ),
                             ));
 
                             parent
-                                .spawn(ButtonBundle {
-                                    background_color: NORMAL_BUTTON.into(),
-                                    ..default()
-                                })
-                                .insert(BindingButton(action, 0usize))
+                                .spawn((
+                                    Name::new("Binding"),
+                                    BindingButton(action, 0usize),
+                                    ButtonBundle {
+                                        background_color: NORMAL_BUTTON.into(),
+                                        ..default()
+                                    },
+                                ))
                                 .with_children(|parent| {
                                     parent.spawn(TextBundle {
                                         text: Text::from_section(
@@ -554,34 +587,24 @@ fn control_menu(
                 }
 
                 parent
-                    .spawn(NodeBundle {
-                        style: Style {
-                            margin: UiRect::all(Val::Auto),
-                            flex_direction: FlexDirection::Column,
-                            align_items: AlignItems::Center,
+                    .spawn((
+                        Name::new("Reset Inputs"),
+                        NodeBundle {
+                            style: Style {
+                                margin: UiRect::all(Val::Auto),
+                                flex_direction: FlexDirection::Column,
+                                align_items: AlignItems::Center,
+                                ..default()
+                            },
+                            background_color: Color::CRIMSON.into(),
                             ..default()
                         },
-                        background_color: Color::CRIMSON.into(),
-                        ..default()
-                    })
+                    ))
                     .with_children(|parent| {
                         ResetButton::spawn(parent, button_text_style.clone());
                     });
 
-                parent
-                    .spawn(NodeBundle {
-                        style: Style {
-                            margin: UiRect::all(Val::Auto),
-                            flex_direction: FlexDirection::Column,
-                            align_items: AlignItems::Center,
-                            ..default()
-                        },
-                        background_color: Color::CRIMSON.into(),
-                        ..default()
-                    })
-                    .with_children(|parent| {
-                        BackButton::spawn(parent, button_text_style.clone());
-                    });
+                BackButton::spawn(parent, button_text_style.clone());
             });
     });
 }

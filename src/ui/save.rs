@@ -131,11 +131,14 @@ fn update_menu(
 
                 for (parent, save_button) in save_nodes.iter() {
                     let button_id = cmd
-                        .spawn(ButtonBundle {
-                            background_color: NORMAL_BUTTON.into(),
-                            ..default()
-                        })
-                        .insert(DeleteButton(save_button.0.clone()))
+                        .spawn((
+                            Name::new("Delete Button"),
+                            DeleteButton(save_button.0.clone()),
+                            ButtonBundle {
+                                background_color: NORMAL_BUTTON.into(),
+                                ..default()
+                            },
+                        ))
                         .with_children(|parent| {
                             parent.spawn(TextBundle {
                                 text: Text::from_section("Delete?", button_text_style.clone()),
@@ -172,41 +175,50 @@ fn save_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
         color: TEXT_COLOR,
     };
 
-    cmd.spawn(NodeBundle {
-        style: Style {
-            margin: UiRect::all(Val::Auto),
-            flex_direction: FlexDirection::Row,
+    cmd.spawn((
+        Name::new("Save Menu"),
+        DeleteMode(false),
+        NodeBundle {
+            style: Style {
+                margin: UiRect::all(Val::Auto),
+                flex_direction: FlexDirection::Row,
+                ..default()
+            },
+            background_color: Color::CRIMSON.into(),
             ..default()
         },
-        background_color: Color::CRIMSON.into(),
-        ..default()
-    })
-    .insert(DeleteMode(false))
+    ))
     .with_children(|parent| {
         parent
-            .spawn(NodeBundle {
-                style: Style {
-                    margin: UiRect::all(Val::Auto),
-                    flex_direction: FlexDirection::Column,
-                    align_items: AlignItems::Center,
+            .spawn((
+                Name::new("Saves"),
+                NodeBundle {
+                    style: Style {
+                        margin: UiRect::all(Val::Auto),
+                        flex_direction: FlexDirection::Column,
+                        align_items: AlignItems::Center,
+                        ..default()
+                    },
+                    background_color: Color::CRIMSON.into(),
                     ..default()
                 },
-                background_color: Color::CRIMSON.into(),
-                ..default()
-            })
+            ))
             .with_children(|parent| {
-                SaveSlots::new(5).iter().for_each(|save| {
+                SaveSlots::new(5).iter().enumerate().for_each(|(i, save)| {
                     parent
-                        .spawn(NodeBundle {
-                            style: Style {
-                                margin: UiRect::all(Val::Auto),
-                                flex_direction: FlexDirection::Row,
-                                align_items: AlignItems::Center,
+                        .spawn((
+                            Name::new(format!("Save Slot {i}")),
+                            NodeBundle {
+                                style: Style {
+                                    margin: UiRect::all(Val::Auto),
+                                    flex_direction: FlexDirection::Row,
+                                    align_items: AlignItems::Center,
+                                    ..default()
+                                },
+                                background_color: Color::CRIMSON.into(),
                                 ..default()
                             },
-                            background_color: Color::CRIMSON.into(),
-                            ..default()
-                        })
+                        ))
                         .with_children(|parent| {
                             let mut button = parent.spawn(ButtonBundle {
                                 style: button_style.clone(),
@@ -239,21 +251,27 @@ fn save_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
 
         if !saves.is_empty() {
             parent
-                .spawn(NodeBundle {
-                    style: Style {
-                        align_items: AlignItems::FlexStart,
+                .spawn((
+                    Name::new("Actions"),
+                    NodeBundle {
+                        style: Style {
+                            align_items: AlignItems::FlexStart,
+                            ..default()
+                        },
+                        background_color: Color::CRIMSON.into(),
                         ..default()
                     },
-                    background_color: Color::CRIMSON.into(),
-                    ..default()
-                })
+                ))
                 .with_children(|parent| {
                     parent
-                        .spawn(ButtonBundle {
-                            background_color: NORMAL_BUTTON.into(),
-                            ..default()
-                        })
-                        .insert(DeleteModeButton)
+                        .spawn((
+                            Name::new("Delete Save"),
+                            DeleteModeButton,
+                            ButtonBundle {
+                                background_color: NORMAL_BUTTON.into(),
+                                ..default()
+                            },
+                        ))
                         .with_children(|parent| {
                             parent
                                 .spawn(TextBundle::from_sections([TextSection::new(

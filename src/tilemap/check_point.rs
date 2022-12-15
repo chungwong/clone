@@ -169,9 +169,11 @@ pub(crate) fn spawn_check_points(
                             GravityScale(0.0),
                             RigidBody::Fixed,
                             TransformBundle::from(Transform::from_xyz(
-                                (merged_grid.left + merged_grid.right + 1) as f32 * grid_size as f32
+                                (merged_grid.left + merged_grid.right + 1) as f32
+                                    * grid_size as f32
                                     / 2.,
-                                (merged_grid.bottom + merged_grid.top + 1) as f32 * grid_size as f32
+                                (merged_grid.bottom + merged_grid.top + 1) as f32
+                                    * grid_size as f32
                                     / 2.,
                                 0.,
                             )),

@@ -42,6 +42,7 @@ fn options_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
     };
 
     cmd.spawn((
+        Name::new("Options Menu"),
         Despawnable,
         NodeBundle {
             style: Style {
@@ -61,27 +62,33 @@ fn options_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
     ))
     .with_children(|parent| {
         parent
-            .spawn(NodeBundle {
-                style: Style {
-                    margin: UiRect::all(Val::Auto),
-                    flex_direction: FlexDirection::Column,
+            .spawn((
+                Name::new("Wrapper"),
+                NodeBundle {
+                    style: Style {
+                        margin: UiRect::all(Val::Auto),
+                        flex_direction: FlexDirection::Column,
+                        ..default()
+                    },
+                    background_color: Color::CRIMSON.into(),
                     ..default()
                 },
-                background_color: Color::CRIMSON.into(),
-                ..default()
-            })
+            ))
             .with_children(|parent| {
                 parent
-                    .spawn(NodeBundle {
-                        style: Style {
-                            margin: UiRect::all(Val::Auto),
-                            flex_direction: FlexDirection::Column,
-                            align_items: AlignItems::Center,
+                    .spawn((
+                        Name::new("Options"),
+                        NodeBundle {
+                            style: Style {
+                                margin: UiRect::all(Val::Auto),
+                                flex_direction: FlexDirection::Column,
+                                align_items: AlignItems::Center,
+                                ..default()
+                            },
+                            background_color: Color::CRIMSON.into(),
                             ..default()
                         },
-                        background_color: Color::CRIMSON.into(),
-                        ..default()
-                    })
+                    ))
                     .with_children(|parent| {
                         parent.spawn(TextBundle {
                             style: Style {
@@ -101,16 +108,19 @@ fn options_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
                     });
 
                 parent
-                    .spawn(NodeBundle {
-                        style: Style {
-                            margin: UiRect::all(Val::Auto),
-                            flex_direction: FlexDirection::Column,
-                            align_items: AlignItems::Center,
+                    .spawn((
+                        Name::new("Audio"),
+                        NodeBundle {
+                            style: Style {
+                                margin: UiRect::all(Val::Auto),
+                                flex_direction: FlexDirection::Column,
+                                align_items: AlignItems::Center,
+                                ..default()
+                            },
+                            background_color: Color::CRIMSON.into(),
                             ..default()
                         },
-                        background_color: Color::CRIMSON.into(),
-                        ..default()
-                    })
+                    ))
                     .with_children(|parent| {
                         parent
                             .spawn(ButtonBundle {
@@ -128,16 +138,19 @@ fn options_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
                     });
 
                 parent
-                    .spawn(NodeBundle {
-                        style: Style {
-                            margin: UiRect::all(Val::Auto),
-                            flex_direction: FlexDirection::Column,
-                            align_items: AlignItems::Center,
+                    .spawn((
+                        Name::new("Controls"),
+                        NodeBundle {
+                            style: Style {
+                                margin: UiRect::all(Val::Auto),
+                                flex_direction: FlexDirection::Column,
+                                align_items: AlignItems::Center,
+                                ..default()
+                            },
+                            background_color: Color::CRIMSON.into(),
                             ..default()
                         },
-                        background_color: Color::CRIMSON.into(),
-                        ..default()
-                    })
+                    ))
                     .with_children(|parent| {
                         parent
                             .spawn(ButtonBundle {
@@ -154,20 +167,7 @@ fn options_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
                             });
                     });
 
-                parent
-                    .spawn(NodeBundle {
-                        style: Style {
-                            margin: UiRect::all(Val::Auto),
-                            flex_direction: FlexDirection::Column,
-                            align_items: AlignItems::Center,
-                            ..default()
-                        },
-                        background_color: Color::CRIMSON.into(),
-                        ..default()
-                    })
-                    .with_children(|parent| {
-                        BackButton::spawn(parent, button_text_style.clone());
-                    });
+                BackButton::spawn(parent, button_text_style.clone());
             });
     });
 }
