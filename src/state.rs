@@ -7,13 +7,10 @@ pub(crate) use iyes_loopless::prelude::*;
 // GlobalState will despawn all compoents on state exit, unless they are marked with Persistent
 #[derive(Clone, Copy, Debug, Eq, Hash, GlobalState, PartialEq, Resource)]
 pub(crate) enum GameState {
-    AudioMenu,
-    ControlMenu,
     InGame,
     InGameAssetLoading,
     MainMenu,
     MainMenuAssetLoading,
-    OptionMenu,
     SaveMenu,
     Splash,
     SplashAssetLoading,
@@ -26,13 +23,10 @@ impl Default for GameState {
         // ❯ GAMESTATE=InGame cargo run
         if let Ok(state) = env::var("GAMESTATE") {
             match state.as_ref() {
-                "AudioMenu" => Self::AudioMenu,
                 "InGame" => Self::InGameAssetLoading,
-                "ControlMenu" => Self::ControlMenu,
                 "InGameAssetLoading" => Self::InGameAssetLoading,
                 "MainMenu" => Self::MainMenuAssetLoading,
                 "MainMenuAssetLoading" => Self::MainMenuAssetLoading,
-                "OptionMenu" => Self::OptionMenu,
                 "SaveMenu" => Self::SaveMenu,
                 "Splash" => Self::SplashAssetLoading,
                 "SplashAssetLoading" => Self::SplashAssetLoading,
@@ -42,6 +36,16 @@ impl Default for GameState {
             Self::SplashAssetLoading
         }
     }
+}
+
+#[derive(Clone, Copy, Debug, Default, Eq, GlobalState, Hash, PartialEq, Resource)]
+pub(crate) enum MenuState {
+    Audio,
+    Controls,
+    #[default]
+    None,
+    Options,
+    Save,
 }
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq, Resource)]
@@ -63,6 +67,7 @@ pub(crate) struct StatePlugin;
 impl Plugin for StatePlugin {
     fn build(&self, app: &mut App) {
         app.add_loopless_state(GameState::default())
+            .add_loopless_state(MenuState::default())
             .add_loopless_state(PauseState::default())
             .add_global_state::<GameState>();
     }

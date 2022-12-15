@@ -9,19 +9,64 @@ use crate::{
     input::{Actionlike, ControlAction, ControlInputMap, InputKind, UserInput},
     state::*,
     ui::menu::{
-        button_interact, despawn, get_button_style, BackButton, GameConfig, GameConfigSaveEvent,
-        NORMAL_BUTTON, TEXT_COLOR,
+        button_interact, despawn, get_button_style, BackButton, Despawnable, GameConfig,
+        GameConfigSaveEvent, NORMAL_BUTTON, TEXT_COLOR,
     },
 };
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
-enum BindingState {
+pub(crate) struct ControlPlugin;
+
+impl Plugin for ControlPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_loopless_state(BindingState::None)
+            .add_system_set(
+                ConditionSet::new()
+                    .run_in_state(MenuState::Controls)
+                    .with_system(BackButton::to_options_menu.run_if(button_interact::<BackButton>))
+                    .with_system(BackButton::on_esc_to_options_menu)
+                    .with_system(BindingButton::show_popup.run_if(button_interact::<BindingButton>))
+                    .with_system(binding_window_system)
+                    .with_system(ResetButton::reset_inputs.run_if(button_interact::<ResetButton>))
+                    .into(),
+            )
+            .add_system_set(
+                ConditionSet::new()
+                    .run_in_state(MenuState::Options)
+                    .with_system(ControlButton::show.run_if(button_interact::<ControlButton>))
+                    .into(),
+            )
+            .add_enter_system(MenuState::Controls, control_menu)
+            .add_exit_system(MenuState::Controls, cleanup)
+            .add_system(load_control_input_map)
+            .add_enter_system(BindingState::Conflict, BindingConflict::conflict_popup)
+            .add_enter_system(BindingState::None, despawn::<BindingPopUp>)
+            .add_system_set(
+                ConditionSet::new()
+                    .run_in_state(BindingState::Conflict)
+                    .with_system(
+                        ReplaceConflictButton::on_click
+                            .run_if(button_interact::<ReplaceConflictButton>),
+                    )
+                    .with_system(
+                        CancelConflictButton::on_click
+                            .run_if(button_interact::<CancelConflictButton>),
+                    )
+                    .into(),
+            );
+    }
+}
+
+fn cleanup(mut cmd: Commands) {
+    cmd.remove_resource::<ActiveBinding>();
+    cmd.insert_resource(NextState(BindingState::None));
+}
+
+#[derive(Clone, Debug, Default, Eq, Hash, PartialEq, Resource)]
+pub(crate) enum BindingState {
+    #[default]
     None,
     Conflict,
 }
-
-#[derive(Component, Debug)]
-struct BindingPopUp;
 
 #[derive(Clone, Copy, Component, Debug, PartialEq)]
 struct BindingButton(ControlAction, usize);
@@ -39,58 +84,63 @@ impl BindingButton {
                 let BindingButton(action, index) = button;
 
                 cmd.insert_resource(ActiveBinding::new(*action, *index));
-                cmd.spawn(NodeBundle {
-                    style: Style {
-                        position_type: PositionType::Absolute,
-                        position: UiRect {
-                            left: Val::Percent(20.0),
-                            right: Val::Percent(20.0),
-                            top: Val::Percent(45.0),
-                            bottom: Val::Percent(50.0),
+
+                cmd.spawn((
+                    Despawnable,
+                    BindingPopUp,
+                    NodeBundle {
+                        style: Style {
+                            position_type: PositionType::Absolute,
+                            size: Size::new(Val::Percent(100.), Val::Percent(100.)),
+                            justify_content: JustifyContent::Center,
+                            align_items: AlignItems::Center,
+                            ..default()
                         },
-                        margin: UiRect::all(Val::Auto),
-                        flex_direction: FlexDirection::Column,
-                        align_items: AlignItems::Center,
                         ..default()
                     },
-                    background_color: Color::NAVY.into(),
-                    ..default()
-                })
+                ))
                 .with_children(|parent| {
                     parent
-                        .spawn(
-                            TextBundle::from_sections([
-                                TextSection::new(
-                                    "Press any key now to bind",
-                                    TextStyle {
-                                        font: font.clone(),
-                                        font_size: 30.0,
-                                        color: TEXT_COLOR,
-                                    },
-                                ),
-                                TextSection::new(
-                                    format!(" {action:?} "),
-                                    TextStyle {
-                                        font: font.clone(),
-                                        font_size: 30.0,
-                                        color: TEXT_COLOR,
-                                    },
-                                ),
-                                TextSection::new(
-                                    "or Esc to cancel",
-                                    TextStyle {
-                                        font: font.clone(),
-                                        font_size: 30.0,
-                                        color: TEXT_COLOR,
-                                    },
-                                ),
-                            ])
-                            .with_style(Style {
-                                position_type: PositionType::Absolute,
+                        .spawn(NodeBundle {
+                            style: Style {
+                                margin: UiRect::all(Val::Auto),
+                                flex_direction: FlexDirection::Column,
+                                align_items: AlignItems::Center,
                                 ..default()
-                            }),
-                        )
-                        .insert(BindingPopUp);
+                            },
+                            background_color: Color::NAVY.into(),
+                            ..default()
+                        })
+                        .with_children(|parent| {
+                            parent
+                                .spawn(TextBundle::from_sections([
+                                    TextSection::new(
+                                        "Press any key now to bind",
+                                        TextStyle {
+                                            font: font.clone(),
+                                            font_size: 30.0,
+                                            color: TEXT_COLOR,
+                                        },
+                                    ),
+                                    TextSection::new(
+                                        format!(" {action:?} "),
+                                        TextStyle {
+                                            font: font.clone(),
+                                            font_size: 30.0,
+                                            color: TEXT_COLOR,
+                                        },
+                                    ),
+                                    TextSection::new(
+                                        "or Esc to cancel",
+                                        TextStyle {
+                                            font: font.clone(),
+                                            font_size: 30.0,
+                                            color: TEXT_COLOR,
+                                        },
+                                    ),
+                                ]))
+                                .insert(BindingPopUp);
+                        });
                 });
             }
         }
@@ -142,7 +192,7 @@ impl ResetButton {
             *control_input_map = ControlAction::get_input_map();
 
             save_input_map(&control_input_map, &mut game_config, &mut config_save_event);
-            cmd.insert_resource(NextState(GameState::ControlMenu));
+            cmd.insert_resource(NextState(MenuState::Controls));
         }
     }
 }
@@ -164,7 +214,7 @@ fn binding_window_system(
 
     if keyboard_input.just_pressed(KeyCode::Escape) {
         cmd.remove_resource::<ActiveBinding>();
-        cmd.insert_resource(NextState(GameState::ControlMenu));
+        cmd.insert_resource(NextState(MenuState::Controls));
     } else if active_binding.conflict.is_some() {
         if binding_state.0 != BindingState::Conflict {
             cmd.insert_resource(NextState(BindingState::Conflict));
@@ -184,7 +234,7 @@ fn binding_window_system(
         } else {
             control_input_map.insert_at(input_button, active_binding.action, active_binding.index);
             cmd.remove_resource::<ActiveBinding>();
-            cmd.insert_resource(NextState(GameState::ControlMenu));
+            cmd.insert_resource(NextState(MenuState::Controls));
         }
         save_input_map(&control_input_map, &mut game_config, &mut config_save_event);
     }
@@ -227,7 +277,7 @@ impl CancelConflictButton {
 }
 
 #[derive(Component)]
-struct BindingConflictPopUp;
+struct BindingPopUp;
 
 #[derive(Clone, Copy, Debug)]
 struct BindingConflict {
@@ -252,86 +302,93 @@ impl BindingConflict {
                     };
 
                     cmd.spawn((
-                        BindingConflictPopUp,
+                        Despawnable,
+                        BindingPopUp,
                         NodeBundle {
                             style: Style {
                                 position_type: PositionType::Absolute,
-                                position: UiRect {
-                                    left: Val::Percent(30.0),
-                                    right: Val::Percent(30.0),
-                                    top: Val::Percent(35.0),
-                                    bottom: Val::Percent(35.0),
-                                },
-                                margin: UiRect::all(Val::Auto),
-                                flex_direction: FlexDirection::Column,
+                                size: Size::new(Val::Percent(100.), Val::Percent(100.)),
+                                justify_content: JustifyContent::Center,
                                 align_items: AlignItems::Center,
                                 ..default()
                             },
-                            background_color: Color::NAVY.into(),
                             ..default()
                         },
                     ))
                     .with_children(|parent| {
-                        parent.spawn(TextBundle {
-                            style: Style {
-                                margin: UiRect::all(Val::Px(50.0)),
-                                ..default()
-                            },
-                            text: Text::from_section(
-                                format!(
-                                    "Input {:?} is already used by {:?}",
-                                    conflict.input_button, conflict.action
-                                ),
-                                TextStyle {
-                                    font: font.clone(),
-                                    font_size: 20.0,
-                                    color: TEXT_COLOR,
-                                },
-                            ),
-                            ..default()
-                        });
-
                         parent
                             .spawn(NodeBundle {
                                 style: Style {
                                     margin: UiRect::all(Val::Auto),
-                                    flex_direction: FlexDirection::Row,
+                                    flex_direction: FlexDirection::Column,
                                     align_items: AlignItems::Center,
                                     ..default()
                                 },
+                                background_color: Color::NAVY.into(),
                                 ..default()
                             })
                             .with_children(|parent| {
-                                parent
-                                    .spawn(ButtonBundle {
-                                        background_color: NORMAL_BUTTON.into(),
+                                parent.spawn(TextBundle {
+                                    style: Style {
+                                        margin: UiRect::all(Val::Px(50.0)),
                                         ..default()
-                                    })
-                                    .insert(ReplaceConflictButton)
-                                    .with_children(|parent| {
-                                        parent.spawn(TextBundle {
-                                            text: Text::from_section(
-                                                "Replace",
-                                                button_text_style.clone(),
-                                            ),
-                                            ..default()
-                                        });
-                                    });
+                                    },
+                                    text: Text::from_section(
+                                        format!(
+                                            "Input {:?} is already used by {:?}",
+                                            conflict.input_button, conflict.action
+                                        ),
+                                        TextStyle {
+                                            font: font.clone(),
+                                            font_size: 20.0,
+                                            color: TEXT_COLOR,
+                                        },
+                                    ),
+                                    ..default()
+                                });
 
                                 parent
-                                    .spawn(ButtonBundle {
-                                        background_color: NORMAL_BUTTON.into(),
+                                    .spawn(NodeBundle {
+                                        style: Style {
+                                            margin: UiRect::all(Val::Auto),
+                                            flex_direction: FlexDirection::Row,
+                                            align_items: AlignItems::Center,
+                                            ..default()
+                                        },
                                         ..default()
                                     })
-                                    .insert(CancelConflictButton)
                                     .with_children(|parent| {
-                                        parent.spawn(TextBundle {
-                                            text: Text::from_section(
-                                                "Cancel",
-                                                button_text_style.clone(),
-                                            ),
-                                            ..default()
-                                        });
+                                        parent
+                                            .spawn(ButtonBundle {
+                                                background_color: NORMAL_BUTTON.into(),
+                                                ..default()
+                                            })
+                                            .insert(ReplaceConflictButton)
+                                            .with_children(|parent| {
+                                                parent.spawn(TextBundle {
+                                                    text: Text::from_section(
+                                                        "Replace",
+                                                        button_text_style.clone(),
+                                                    ),
+                                                    ..default()
+                                                });
+                                            });
+
+                                        parent
+                                            .spawn(ButtonBundle {
+                                                background_color: NORMAL_BUTTON.into(),
+                                                ..default()
+                                            })
+                                            .insert(CancelConflictButton)
+                                            .with_children(|parent| {
+                                                parent.spawn(TextBundle {
+                                                    text: Text::from_section(
+                                                        "Cancel",
+                                                        button_text_style.clone(),
+                                                    ),
+                                                    ..default()
+                                                });
+                                            });
                                     });
                             });
                     });
@@ -382,8 +439,6 @@ fn control_menu(
     asset_server: Res<AssetServer>,
     mut control_input_map: ResMut<ControlInputMap>,
 ) {
-    cmd.spawn(Camera2dBundle::default());
-
     if control_input_map.is_empty() {
         *control_input_map = ControlAction::get_input_map()
     }
@@ -396,16 +451,19 @@ fn control_menu(
         color: TEXT_COLOR,
     };
 
-    cmd.spawn(NodeBundle {
-        style: Style {
-            margin: UiRect::all(Val::Auto),
-            flex_direction: FlexDirection::Column,
-            align_items: AlignItems::Center,
+    cmd.spawn((
+        Despawnable,
+        NodeBundle {
+            style: Style {
+                position_type: PositionType::Absolute,
+                size: Size::new(Val::Percent(100.), Val::Percent(100.)),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                ..default()
+            },
             ..default()
         },
-        background_color: Color::CRIMSON.into(),
-        ..default()
-    })
+    ))
     .with_children(|parent| {
         parent
             .spawn(NodeBundle {
@@ -419,144 +477,120 @@ fn control_menu(
                 ..default()
             })
             .with_children(|parent| {
-                parent.spawn(TextBundle {
-                    style: Style {
-                        margin: UiRect::all(Val::Px(50.0)),
-                        ..default()
-                    },
-                    text: Text::from_section(
-                        "Controls",
-                        TextStyle {
-                            font: font.clone(),
-                            font_size: 80.0,
-                            color: TEXT_COLOR,
+                parent
+                    .spawn(NodeBundle {
+                        style: Style {
+                            margin: UiRect::all(Val::Auto),
+                            flex_direction: FlexDirection::Column,
+                            align_items: AlignItems::Center,
+                            ..default()
                         },
-                    ),
-                    ..default()
-                });
-            });
-
-        for action in ControlAction::variants() {
-            let button_text = match control_input_map.get(action).get_at(0) {
-                Some(UserInput::Single(InputKind::GamepadButton(gamepad_button))) => {
-                    format!("{gamepad_button:?}")
-                }
-                Some(UserInput::Single(InputKind::Keyboard(keycode))) => {
-                    format!("{keycode:?}")
-                }
-                Some(UserInput::Single(InputKind::Mouse(mouse_button))) => {
-                    format!("{mouse_button:?}")
-                }
-                _ => "Empty".to_string(),
-            };
-
-            parent
-                .spawn(NodeBundle {
-                    style: Style {
-                        align_items: AlignItems::Center,
+                        background_color: Color::CRIMSON.into(),
                         ..default()
-                    },
-                    background_color: Color::CRIMSON.into(),
-                    ..default()
-                })
-                .with_children(|parent| {
-                    parent.spawn(TextBundle::from_section(
-                        format!("{action:?}  "),
-                        button_text_style.clone(),
-                    ));
+                    })
+                    .with_children(|parent| {
+                        parent.spawn(TextBundle {
+                            style: Style {
+                                margin: UiRect::all(Val::Px(50.0)),
+                                ..default()
+                            },
+                            text: Text::from_section(
+                                "Controls",
+                                TextStyle {
+                                    font: font.clone(),
+                                    font_size: 80.0,
+                                    color: TEXT_COLOR,
+                                },
+                            ),
+                            ..default()
+                        });
+                    });
+
+                for action in ControlAction::variants() {
+                    let button_text = match control_input_map.get(action).get_at(0) {
+                        Some(UserInput::Single(InputKind::GamepadButton(gamepad_button))) => {
+                            format!("{gamepad_button:?}")
+                        }
+                        Some(UserInput::Single(InputKind::Keyboard(keycode))) => {
+                            format!("{keycode:?}")
+                        }
+                        Some(UserInput::Single(InputKind::Mouse(mouse_button))) => {
+                            format!("{mouse_button:?}")
+                        }
+                        _ => "Empty".to_string(),
+                    };
 
                     parent
-                        .spawn(ButtonBundle {
-                            background_color: NORMAL_BUTTON.into(),
+                        .spawn(NodeBundle {
+                            style: Style {
+                                align_items: AlignItems::Center,
+                                ..default()
+                            },
+                            background_color: Color::CRIMSON.into(),
                             ..default()
                         })
-                        .insert(BindingButton(action, 0usize))
                         .with_children(|parent| {
-                            parent.spawn(TextBundle {
-                                text: Text::from_section(button_text, button_text_style.clone()),
-                                ..default()
-                            });
+                            parent.spawn(TextBundle::from_section(
+                                format!("{action:?}  "),
+                                button_text_style.clone(),
+                            ));
+
+                            parent
+                                .spawn(ButtonBundle {
+                                    background_color: NORMAL_BUTTON.into(),
+                                    ..default()
+                                })
+                                .insert(BindingButton(action, 0usize))
+                                .with_children(|parent| {
+                                    parent.spawn(TextBundle {
+                                        text: Text::from_section(
+                                            button_text,
+                                            button_text_style.clone(),
+                                        ),
+                                        ..default()
+                                    });
+                                });
                         });
-                });
-        }
+                }
 
-        parent
-            .spawn(NodeBundle {
-                style: Style {
-                    margin: UiRect::all(Val::Auto),
-                    flex_direction: FlexDirection::Column,
-                    align_items: AlignItems::Center,
-                    ..default()
-                },
-                background_color: Color::CRIMSON.into(),
-                ..default()
-            })
-            .with_children(|parent| {
-                ResetButton::spawn(parent, button_text_style.clone());
-            });
+                parent
+                    .spawn(NodeBundle {
+                        style: Style {
+                            margin: UiRect::all(Val::Auto),
+                            flex_direction: FlexDirection::Column,
+                            align_items: AlignItems::Center,
+                            ..default()
+                        },
+                        background_color: Color::CRIMSON.into(),
+                        ..default()
+                    })
+                    .with_children(|parent| {
+                        ResetButton::spawn(parent, button_text_style.clone());
+                    });
 
-        parent
-            .spawn(NodeBundle {
-                style: Style {
-                    margin: UiRect::all(Val::Auto),
-                    flex_direction: FlexDirection::Column,
-                    align_items: AlignItems::Center,
-                    ..default()
-                },
-                background_color: Color::CRIMSON.into(),
-                ..default()
-            })
-            .with_children(|parent| {
-                BackButton::spawn(parent, button_text_style.clone());
+                parent
+                    .spawn(NodeBundle {
+                        style: Style {
+                            margin: UiRect::all(Val::Auto),
+                            flex_direction: FlexDirection::Column,
+                            align_items: AlignItems::Center,
+                            ..default()
+                        },
+                        background_color: Color::CRIMSON.into(),
+                        ..default()
+                    })
+                    .with_children(|parent| {
+                        BackButton::spawn(parent, button_text_style.clone());
+                    });
             });
     });
-}
-
-pub(crate) struct ControlPlugin;
-
-impl Plugin for ControlPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_loopless_state(BindingState::None)
-            .add_system_set(
-                ConditionSet::new()
-                    .run_in_state(GameState::ControlMenu)
-                    .with_system(BackButton::to_option_menu.run_if(button_interact::<BackButton>))
-                    .with_system(BindingButton::show_popup.run_if(button_interact::<BindingButton>))
-                    .with_system(binding_window_system)
-                    .with_system(ResetButton::reset_inputs.run_if(button_interact::<ResetButton>))
-                    .into(),
-            )
-            .add_system_set(
-                ConditionSet::new()
-                    .run_in_state(GameState::OptionMenu)
-                    .with_system(ControlButton::show.run_if(button_interact::<ControlButton>))
-                    .into(),
-            )
-            .add_enter_system(GameState::ControlMenu, control_menu)
-            .add_system(load_control_input_map)
-            .add_enter_system(BindingState::Conflict, BindingConflict::conflict_popup)
-            .add_exit_system(BindingState::Conflict, despawn::<BindingConflictPopUp>)
-            .add_system_set(
-                ConditionSet::new()
-                    .run_in_state(BindingState::Conflict)
-                    .with_system(
-                        ReplaceConflictButton::on_click
-                            .run_if(button_interact::<ReplaceConflictButton>),
-                    )
-                    .with_system(
-                        CancelConflictButton::on_click
-                            .run_if(button_interact::<CancelConflictButton>),
-                    )
-                    .into(),
-            );
-    }
 }
 
 #[derive(Component)]
 pub(crate) struct ControlButton;
 impl ControlButton {
     pub(crate) fn show(mut cmd: Commands) {
-        cmd.insert_resource(NextState(GameState::ControlMenu));
+        cmd.insert_resource(NextState(MenuState::Controls));
     }
 }
 

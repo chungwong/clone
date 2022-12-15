@@ -13,7 +13,8 @@ use crate::{
     player::{Health, Player},
     state::{AppLooplessStateExt, ConditionSet, GameState, IntoConditionalSystem, NextState},
     ui::menu::{
-        button_interact, get_button_style, on_esc_main_menu, BackButton, NORMAL_BUTTON, TEXT_COLOR,
+        button_interact, get_button_style, on_esc_main_menu, BackButton, MainMenuButton,
+        NORMAL_BUTTON, TEXT_COLOR,
     },
 };
 
@@ -178,7 +179,9 @@ impl Plugin for SavePlugin {
                     .run_in_state(GameState::SaveMenu)
                     .with_system(NewSaveButton::create.run_if(button_interact::<NewSaveButton>))
                     .with_system(LoadSaveButton::load.run_if(button_interact::<LoadSaveButton>))
-                    .with_system(BackButton::to_main_menu.run_if(button_interact::<BackButton>))
+                    .with_system(
+                        MainMenuButton::back_to_main_menu.run_if(button_interact::<BackButton>),
+                    )
                     .with_system(DeleteButton::delete.run_if(button_interact::<DeleteButton>))
                     .with_system(
                         DeleteModeButton::toggle.run_if(button_interact::<DeleteModeButton>),

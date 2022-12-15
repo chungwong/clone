@@ -1,3 +1,4 @@
+pub(crate) mod audio;
 pub(crate) mod control;
 pub(crate) mod menu;
 pub(crate) mod options;

@@ -9,7 +9,7 @@ pub(crate) type AudioSource = bevy_kira_audio::AudioSource;
 
 use crate::{
     asset::{AudioAssets, MainMenuAssets},
-    state::{AppLooplessStateExt, GameState},
+    state::{AppLooplessStateExt, CurrentState, GameState, NextState},
     ui::menu::GameConfig,
 };
 
@@ -55,17 +55,28 @@ pub(crate) struct MusicChannel;
 #[derive(Component, Debug, Default, Clone, Resource)]
 pub(crate) struct EffectsChannel;
 
+#[derive(Clone, Debug, Default, Eq, Hash, PartialEq, Resource)]
+enum AudioState {
+    #[default]
+    None,
+    MainMenu,
+    InGame,
+}
+
 pub struct AudioPlugin;
 
 impl Plugin for AudioPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(KiraAudioPlugin)
+            .add_loopless_state(AudioState::default())
             .insert_resource(ChannelState::<MusicChannel>::default())
             .insert_resource(ChannelState::<EffectsChannel>::default())
             .add_audio_channel::<MusicChannel>()
             .add_audio_channel::<EffectsChannel>()
-            .add_enter_system(GameState::MainMenu, play_menu_music)
-            .add_enter_system(GameState::InGame, play_game_music)
+            .add_enter_system(GameState::MainMenu, update_main_menu_audio_state)
+            .add_enter_system(GameState::InGame, update_in_game_audio_state)
+            .add_enter_system(AudioState::MainMenu, play_menu_music)
+            .add_enter_system(AudioState::InGame, play_game_music)
             .add_system_set(setup_controls::<MusicChannel>())
             .add_system_set(setup_controls::<EffectsChannel>());
     }
@@ -77,6 +88,18 @@ fn setup_controls<T: Channel>() -> SystemSet {
         .with_system(pause_channel::<T>)
         .with_system(resume_channel::<T>)
         .with_system(stop_channel::<T>)
+}
+
+fn update_main_menu_audio_state(mut cmd: Commands, audio_state: Res<CurrentState<AudioState>>) {
+    if audio_state.0 != AudioState::MainMenu {
+        cmd.insert_resource(NextState(AudioState::MainMenu));
+    }
+}
+
+fn update_in_game_audio_state(mut cmd: Commands, audio_state: Res<CurrentState<AudioState>>) {
+    if audio_state.0 != AudioState::InGame {
+        cmd.insert_resource(NextState(AudioState::InGame));
+    }
 }
 
 fn play_menu_music(

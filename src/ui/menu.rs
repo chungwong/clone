@@ -13,8 +13,9 @@ use crate::{
     save::{load_file, save_file},
     state::*,
     ui::{
-        control::ControlConfig,
-        options::{AudioConfig, OptionPlugin},
+        audio::AudioConfig,
+        control::{BindingState, ControlConfig},
+        options::OptionPlugin,
     },
 };
 
@@ -29,7 +30,7 @@ const CONFIG_DIR: &str = "data";
 const CONFIG_FILENAME: &str = "config.bin";
 
 #[derive(Component)]
-struct Despawnable;
+pub(crate) struct Despawnable;
 
 pub(crate) fn get_button_style() -> Style {
     Style {
@@ -46,7 +47,7 @@ struct OptionButton;
 
 impl OptionButton {
     fn show(mut cmd: Commands) {
-        cmd.insert_resource(NextState(GameState::OptionMenu));
+        cmd.insert_resource(NextState(MenuState::Options));
     }
 }
 
@@ -94,10 +95,13 @@ impl ResumeButton {
 }
 
 #[derive(Component)]
-struct MainMenuButton;
+struct OptionsMenuButton;
+
+#[derive(Component)]
+pub(crate) struct MainMenuButton;
 impl MainMenuButton {
-    fn back_to_main_menu(mut cmd: Commands) {
-        cmd.insert_resource(NextState(GameState::MainMenuAssetLoading));
+    pub(crate) fn back_to_main_menu(mut cmd: Commands) {
+        cmd.insert_resource(NextState(GameState::MainMenu));
     }
 }
 
@@ -105,11 +109,25 @@ impl MainMenuButton {
 pub(crate) struct BackButton;
 impl BackButton {
     pub(crate) fn to_main_menu(mut cmd: Commands) {
-        cmd.insert_resource(NextState(GameState::MainMenu));
+        cmd.insert_resource(NextState(MenuState::None));
     }
 
-    pub(crate) fn to_option_menu(mut cmd: Commands) {
-        cmd.insert_resource(NextState(GameState::OptionMenu));
+    pub(crate) fn to_options_menu(mut cmd: Commands) {
+        cmd.insert_resource(NextState(MenuState::Options));
+    }
+
+    pub(crate) fn on_esc_to_options_menu(
+        mut cmd: Commands,
+        keys: Res<Input<KeyCode>>,
+        menu_state: Res<CurrentState<MenuState>>,
+        binding_state: Res<CurrentState<BindingState>>,
+    ) {
+        if keys.just_pressed(KeyCode::Escape)
+            && menu_state.0 != MenuState::Options
+            && binding_state.0 == BindingState::None
+        {
+            cmd.insert_resource(NextState(MenuState::Options));
+        }
     }
 
     pub(crate) fn spawn(parent: &mut ChildBuilder, button_text_style: TextStyle) {
@@ -211,10 +229,18 @@ impl Plugin for MenuPlugin {
                     .with_system(
                         MainMenuButton::back_to_main_menu.run_if(button_interact::<MainMenuButton>),
                     )
+                    .with_system(
+                        BackButton::to_options_menu.run_if(button_interact::<OptionsMenuButton>),
+                    )
                     .with_system(QuitButton::exit.run_if(button_interact::<QuitButton>))
                     .with_system(ResumeButton::resume.run_if(on_esc_pause_menu))
                     .into(),
-            );
+            )
+            .add_enter_system(MenuState::None, despawn::<Despawnable>)
+            .add_exit_system(MenuState::Audio, despawn::<Despawnable>)
+            .add_exit_system(MenuState::Controls, despawn::<Despawnable>)
+            .add_exit_system(MenuState::Options, despawn::<Despawnable>)
+            .add_exit_system(MenuState::Save, despawn::<Despawnable>);
     }
 }
 
@@ -377,6 +403,20 @@ fn pause_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
                 background_color: NORMAL_BUTTON.into(),
                 ..default()
             })
+            .insert(OptionsMenuButton)
+            .with_children(|parent| {
+                parent.spawn(TextBundle {
+                    text: Text::from_section("Options", button_text_style.clone()),
+                    ..default()
+                });
+            });
+
+        parent
+            .spawn(ButtonBundle {
+                style: button_style.clone(),
+                background_color: NORMAL_BUTTON.into(),
+                ..default()
+            })
             .insert(MainMenuButton)
             .with_children(|parent| {
                 parent.spawn(TextBundle {
@@ -389,14 +429,14 @@ fn pause_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
     });
 }
 
-/// Pressing escape on screens in Main Menu returns to Main Menu
+/// Pressing escape on screens returns to Main Menu
 pub(crate) fn on_esc_main_menu(
     mut cmd: Commands,
     keys: Res<Input<KeyCode>>,
-    state: Res<CurrentState<GameState>>,
+    state: Res<CurrentState<MenuState>>,
 ) {
-    if keys.just_pressed(KeyCode::Escape) && state.0 != GameState::MainMenu {
-        cmd.insert_resource(NextState(GameState::MainMenu));
+    if keys.just_pressed(KeyCode::Escape) && state.0 != MenuState::None {
+        cmd.insert_resource(NextState(MenuState::None));
     }
 }
 
@@ -420,5 +460,34 @@ fn pause(
 pub(crate) fn despawn<T: Component>(mut cmd: Commands, query: Query<Entity, With<T>>) {
     for entity in query.iter() {
         cmd.entity(entity).despawn_recursive();
+    }
+}
+
+pub(crate) trait ConfigButton {
+    fn save(&self, _: &mut ResMut<GameConfig>);
+}
+
+pub(crate) fn select_button<T: Component + PartialEq + ConfigButton>(
+    interaction_query: Query<
+        (&Interaction, &T, Entity),
+        (Changed<Interaction>, With<Button>, With<T>),
+    >,
+    mut selected_query: Query<(Entity, &mut BackgroundColor), (With<SelectedOption>, With<T>)>,
+    mut cmd: Commands,
+    mut config_save_event: EventWriter<GameConfigSaveEvent>,
+    mut game_config: ResMut<GameConfig>,
+) {
+    for (interaction, button, entity) in &interaction_query {
+        if *interaction == Interaction::Clicked {
+            if let Ok((previous_button, mut previous_color)) = selected_query.get_single_mut() {
+                *previous_color = NORMAL_BUTTON.into();
+                cmd.entity(previous_button).remove::<SelectedOption>();
+                cmd.entity(entity).insert(SelectedOption);
+                button.save(&mut game_config);
+                config_save_event.send(GameConfigSaveEvent);
+            } else {
+                error!("setting button error");
+            }
+        }
     }
 }
