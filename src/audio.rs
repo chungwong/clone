@@ -53,7 +53,7 @@ impl<T> Default for ChannelState<T> {
 pub(crate) struct MusicChannel;
 
 #[derive(Component, Debug, Default, Clone, Resource)]
-pub(crate) struct EffectsChannel;
+pub(crate) struct SoundChannel;
 
 #[derive(Clone, Debug, Default, Eq, Hash, PartialEq, Resource)]
 enum AudioState {
@@ -70,15 +70,16 @@ impl Plugin for AudioPlugin {
         app.add_plugin(KiraAudioPlugin)
             .add_loopless_state(AudioState::default())
             .insert_resource(ChannelState::<MusicChannel>::default())
-            .insert_resource(ChannelState::<EffectsChannel>::default())
+            .insert_resource(ChannelState::<SoundChannel>::default())
             .add_audio_channel::<MusicChannel>()
-            .add_audio_channel::<EffectsChannel>()
+            .add_audio_channel::<SoundChannel>()
             .add_enter_system(AppState::MainMenu, update_main_menu_audio_state)
             .add_enter_system(AppState::InGame, update_in_game_audio_state)
             .add_enter_system(AudioState::MainMenu, play_menu_music)
             .add_enter_system(AudioState::InGame, play_game_music)
             .add_system_set(setup_controls::<MusicChannel>())
-            .add_system_set(setup_controls::<EffectsChannel>());
+            .add_system_set(setup_controls::<SoundChannel>())
+            .add_system(update_volumes);
     }
 }
 
@@ -99,6 +100,19 @@ fn update_main_menu_audio_state(mut cmd: Commands, audio_state: Res<CurrentState
 fn update_in_game_audio_state(mut cmd: Commands, audio_state: Res<CurrentState<AudioState>>) {
     if audio_state.0 != AudioState::InGame {
         cmd.insert_resource(NextState(AudioState::InGame));
+    }
+}
+
+fn update_volumes(
+    game_config: Option<Res<GameConfig>>,
+    music_channel: Res<AudioChannel<MusicChannel>>,
+    sound_channel: Res<AudioChannel<SoundChannel>>,
+) {
+    if let Some(game_config) = game_config {
+        if game_config.is_changed() {
+            music_channel.set_volume(*game_config.audio.music_volume);
+            sound_channel.set_volume(*game_config.audio.sound_volume);
+        }
     }
 }
 

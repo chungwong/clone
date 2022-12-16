@@ -6,7 +6,7 @@ pub use leafwing_input_manager::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::state::PauseState;
+use crate::{state::PauseState, ui::menu::GameConfig};
 
 #[derive(Actionlike, Clone, Copy, Eq, Debug, Hash, PartialEq, Serialize, Deserialize)]
 pub(crate) enum ControlAction {
@@ -94,6 +94,7 @@ impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(InputManagerPlugin::<UiAction>::default())
             .add_plugin(InputManagerPlugin::<ControlAction>::default())
+            .add_system(update_control_input_map)
             .add_enter_system(PauseState::On, pause_player_action)
             .add_exit_system(PauseState::On, resume_player_action)
             .add_startup_system(setup);
@@ -111,4 +112,15 @@ fn resume_player_action(mut toggle_actions: ResMut<ToggleActions<ControlAction>>
 fn setup(mut cmd: Commands) {
     cmd.insert_resource(ControlAction::get_input_map());
     cmd.insert_resource(ControlActionState::default());
+}
+
+fn update_control_input_map(
+    mut control_input_map: ResMut<ControlInputMap>,
+    game_config: Option<Res<GameConfig>>,
+) {
+    if let Some(game_config) = game_config {
+        if game_config.is_changed() {
+            *control_input_map = game_config.control.input_map.clone();
+        }
+    }
 }

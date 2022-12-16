@@ -41,7 +41,6 @@ impl Plugin for ControlPlugin {
             )
             .add_enter_system(MenuState::Controls, control_menu)
             .add_exit_system(MenuState::Controls, cleanup)
-            .add_system(load_control_input_map)
             .add_enter_system(BindingState::Conflict, BindingConflict::conflict_popup)
             .add_enter_system(BindingState::None, despawn::<BindingPopUp>)
             .add_system_set(
@@ -623,7 +622,7 @@ impl ControlButton {
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub(crate) struct ControlConfig {
-    input_map: ControlInputMap,
+    pub(crate) input_map: ControlInputMap,
 }
 
 fn save_input_map(
@@ -633,15 +632,4 @@ fn save_input_map(
 ) {
     game_config.control.input_map = input_map.clone();
     config_save_event.send(GameConfigSaveEvent);
-}
-
-fn load_control_input_map(
-    mut control_input_map: ResMut<ControlInputMap>,
-    game_config: Option<Res<GameConfig>>,
-) {
-    if let Some(game_config) = game_config {
-        if game_config.is_changed() {
-            *control_input_map = game_config.control.input_map.clone();
-        }
-    }
 }
