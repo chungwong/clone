@@ -4,7 +4,7 @@ use std::fs;
 use crate::{
     asset::FontAssets,
     save::{load_file, CurrentSave, Save, SaveData, SaveSlots},
-    state::*,
+    state::{AppLooplessStateExt, AppState, ConditionSet, IntoConditionalSystem, NextState},
     ui::menu::{
         button_interact, get_button_style, on_esc_main_menu, BackButton, MainMenuButton,
         NORMAL_BUTTON, TEXT_COLOR,

@@ -43,8 +43,11 @@ impl Plugin for CameraPlugin {
 }
 
 fn setup(mut cmd: Commands) {
-    cmd.spawn((Name::new("UiInput"), MenuInputManagerBundle::default()))
-        .insert(Persistent);
+    cmd.spawn((
+        Name::new("UiInput"),
+        MenuInputManagerBundle::default(),
+        Persistent,
+    ));
 }
 
 fn fit_camera_to_level(

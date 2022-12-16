@@ -1,14 +1,15 @@
 use bevy::prelude::*;
+use global_state::Transient;
 
 use crate::{
     asset::FontAssets,
-    state::*,
+    state::{AppLooplessStateExt, ConditionSet, IntoConditionalSystem, MenuState},
     ui::{
         audio::{AudioButton, AudioPlugin},
         control::{ControlButton, ControlPlugin},
         menu::{
-            button_interact, get_button_style, on_esc_main_menu, BackButton, Despawnable,
-            NORMAL_BUTTON, TEXT_COLOR,
+            button_interact, get_button_style, on_esc_main_menu, BackButton, NORMAL_BUTTON,
+            TEXT_COLOR,
         },
     },
 };
@@ -43,7 +44,7 @@ fn options_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
 
     cmd.spawn((
         Name::new("Options Menu"),
-        Despawnable,
+        Transient,
         NodeBundle {
             style: Style {
                 margin: UiRect::all(Val::Auto),

@@ -1,7 +1,7 @@
 use std::env;
 
 use bevy::prelude::*;
-use global_state::{AddGlobalState, GlobalState};
+use global_state::{AddGlobalState, AddTransientState, GlobalState, TransientState};
 pub(crate) use iyes_loopless::prelude::*;
 
 // GlobalState will despawn all compoents on state exit, unless they are marked with Persistent
@@ -38,7 +38,7 @@ impl Default for AppState {
     }
 }
 
-#[derive(Clone, Copy, Debug, Default, Eq, GlobalState, Hash, PartialEq, Resource)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq, Resource, TransientState)]
 pub(crate) enum MenuState {
     Audio,
     Controls,
@@ -48,7 +48,7 @@ pub(crate) enum MenuState {
     Save,
 }
 
-#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq, Resource)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq, Resource, TransientState)]
 pub(crate) enum PauseState {
     #[default]
     None,
@@ -69,6 +69,8 @@ impl Plugin for StatePlugin {
         app.add_loopless_state(AppState::default())
             .add_loopless_state(MenuState::default())
             .add_loopless_state(PauseState::default())
-            .add_global_state::<AppState>();
+            .add_global_state::<AppState>()
+            .add_transient_state::<MenuState>()
+            .add_transient_state::<PauseState>();
     }
 }

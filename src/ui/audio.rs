@@ -1,12 +1,13 @@
 use bevy::prelude::*;
+use global_state::Transient;
 use serde::{Deserialize, Serialize};
 
 use crate::{
     asset::FontAssets,
-    state::*,
+    state::{AppLooplessStateExt, ConditionSet, IntoConditionalSystem, MenuState, NextState},
     ui::menu::{
-        button_interact, get_button_style, select_button, BackButton, ConfigButton, Despawnable,
-        GameConfig, SelectedOption, NORMAL_BUTTON, TEXT_COLOR,
+        button_interact, get_button_style, select_button, BackButton, ConfigButton, GameConfig,
+        SelectedOption, NORMAL_BUTTON, TEXT_COLOR,
     },
 };
 
@@ -103,7 +104,7 @@ fn audio_menu(mut cmd: Commands, game_config: Res<GameConfig>, font_assets: Res<
 
     cmd.spawn((
         Name::new("Audio Menu"),
-        Despawnable,
+        Transient,
         NodeBundle {
             style: Style {
                 position_type: PositionType::Absolute,

@@ -3,14 +3,18 @@ use bevy::{
     input::{keyboard::KeyboardInput, mouse::MouseButtonInput, ButtonState},
     prelude::*,
 };
+use global_state::Transient;
 use serde::{Deserialize, Serialize};
 
 use crate::{
     input::{Actionlike, ControlAction, ControlInputMap, InputKind, UserInput},
-    state::*,
+    state::{
+        AppLooplessStateExt, ConditionSet, CurrentState, IntoConditionalSystem, MenuState,
+        NextState,
+    },
     ui::menu::{
-        button_interact, despawn, get_button_style, BackButton, Despawnable, GameConfig,
-        GameConfigSaveEvent, NORMAL_BUTTON, TEXT_COLOR,
+        button_interact, despawn, get_button_style, BackButton, GameConfig, GameConfigSaveEvent,
+        NORMAL_BUTTON, TEXT_COLOR,
     },
 };
 
@@ -87,7 +91,7 @@ impl BindingButton {
 
                 cmd.spawn((
                     Name::new("Binding Popup"),
-                    Despawnable,
+                    Transient,
                     BindingPopUp,
                     NodeBundle {
                         style: Style {
@@ -307,7 +311,7 @@ impl BindingConflict {
 
                     cmd.spawn((
                         Name::new("Conflict Popup"),
-                        Despawnable,
+                        Transient,
                         BindingPopUp,
                         NodeBundle {
                             style: Style {
@@ -470,7 +474,7 @@ fn control_menu(
 
     cmd.spawn((
         Name::new("Controls Menu"),
-        Despawnable,
+        Transient,
         NodeBundle {
             style: Style {
                 position_type: PositionType::Absolute,

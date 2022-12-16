@@ -3,6 +3,7 @@ use std::{fs, path::Path};
 use bevy::{
     app::AppExit, hierarchy::ChildBuilder, prelude::*, tasks::IoTaskPool, window::close_on_esc,
 };
+use global_state::Transient;
 
 use serde::{Deserialize, Serialize};
 
@@ -11,7 +12,10 @@ use crate::{
     input::{UiAction, UiActionState},
     physics::{pause_physics, resume_physics, RapierConfiguration},
     save::{load_file, save_file},
-    state::*,
+    state::{
+        AppLooplessStateExt, AppState, ConditionSet, CurrentState, IntoConditionalSystem,
+        MenuState, NextState, PauseState,
+    },
     ui::{
         audio::AudioConfig,
         control::{BindingState, ControlConfig},
@@ -29,9 +33,6 @@ pub(crate) const TEXT_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
 
 const CONFIG_DIR: &str = "data";
 const CONFIG_FILENAME: &str = "config.bin";
-
-#[derive(Component)]
-pub(crate) struct Despawnable;
 
 pub(crate) fn get_button_style() -> Style {
     Style {
@@ -239,7 +240,7 @@ impl Plugin for MenuPlugin {
                     .into(),
             )
             .add_enter_system(PauseState::On, pause_menu)
-            .add_exit_system(PauseState::On, despawn::<Despawnable>)
+            // .add_exit_system(PauseState::On, despawn::<Despawnable>)
             .add_system_set(
                 ConditionSet::new()
                     .run_in_state(PauseState::Off)
@@ -259,12 +260,12 @@ impl Plugin for MenuPlugin {
                     .with_system(QuitButton::exit.run_if(button_interact::<QuitButton>))
                     .with_system(ResumeButton::resume.run_if(on_esc_pause_menu))
                     .into(),
-            )
-            .add_enter_system(MenuState::None, despawn::<Despawnable>)
-            .add_exit_system(MenuState::Audio, despawn::<Despawnable>)
-            .add_exit_system(MenuState::Controls, despawn::<Despawnable>)
-            .add_exit_system(MenuState::Options, despawn::<Despawnable>)
-            .add_exit_system(MenuState::Save, despawn::<Despawnable>);
+            );
+        // .add_enter_system(MenuState::None, despawn::<Despawnable>)
+        // .add_exit_system(MenuState::Audio, despawn::<Despawnable>)
+        // .add_exit_system(MenuState::Controls, despawn::<Despawnable>)
+        // .add_exit_system(MenuState::Options, despawn::<Despawnable>)
+        // .add_exit_system(MenuState::Save, despawn::<Despawnable>);
     }
 }
 
@@ -407,6 +408,7 @@ fn pause_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
 
     cmd.spawn((
         Name::new("Pause Menu"),
+        Transient,
         NodeBundle {
             style: Style {
                 margin: UiRect::all(Val::Auto),
@@ -417,7 +419,6 @@ fn pause_menu(mut cmd: Commands, font_assets: Res<FontAssets>) {
             background_color: Color::CRIMSON.into(),
             ..default()
         },
-        Despawnable,
     ))
     .with_children(|parent| {
         parent

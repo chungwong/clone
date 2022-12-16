@@ -2,7 +2,7 @@ use bevy::{
     ecs::{schedule::StateData, system::Resource},
     prelude::*,
 };
-pub use global_state_macros::GlobalState;
+pub use global_state_macros::{GlobalState, TransientState};
 use std::marker::PhantomData;
 
 pub trait GlobalState {
@@ -20,8 +20,26 @@ impl AddGlobalState for App {
     }
 }
 
+pub trait TransientState {
+    fn init_transient_state(app: &mut App);
+}
+
+pub trait AddTransientState {
+    fn add_transient_state<T: TransientState + Default + StateData>(&mut self) -> &mut Self;
+}
+
+impl AddTransientState for App {
+    fn add_transient_state<T: TransientState + Default + StateData>(&mut self) -> &mut Self {
+        T::init_transient_state(self);
+        self
+    }
+}
+
 #[derive(Component)]
 pub struct Persistent;
+
+#[derive(Component)]
+pub struct Transient;
 
 #[derive(Default, Resource)]
 pub struct StateTime<T>
@@ -55,10 +73,16 @@ where
     state_time.time += time.delta_seconds();
 }
 
-pub fn cleanup_entities(
+pub fn global_cleanup(
     mut commands: Commands,
     query: Query<Entity, (Without<Persistent>, Without<Parent>)>,
 ) {
+    for entity in query.iter() {
+        commands.entity(entity).despawn_recursive();
+    }
+}
+
+pub fn cleanup_transient(mut commands: Commands, query: Query<Entity, (With<Transient>, Without<Parent>)>) {
     for entity in query.iter() {
         commands.entity(entity).despawn_recursive();
     }
